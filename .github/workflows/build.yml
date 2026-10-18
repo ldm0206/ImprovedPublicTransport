@@ -1,0 +1,72 @@
+name: Build
+
+# 每次推送到 master 自动编译、打包并发布 Release；
+# PR 只编译验证，不发布。
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: 检出源码
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: 安装 MSBuild
+        uses: microsoft/setup-msbuild@v3
+
+      - name: 安装 NuGet
+        uses: nuget/setup-nuget@v4
+
+      - name: 还原 NuGet 包
+        run: nuget restore ImprovedPublicTransport.sln
+
+      - name: 编译（Release）
+        # 游戏引用程序集来自仓库内 Managed 目录（Cities: Skylines 1.21.x）；
+        # SkipDeploy 关闭本地游戏目录部署（PostBuild 事件），CI 上不需要。
+        run: msbuild ImprovedPublicTransport.sln /nologo /m /p:Configuration=Release /p:SkipDeploy=true
+
+      - name: 打包
+        shell: pwsh
+        run: |
+          $out = "package/ImprovedPublicTransport2"
+          New-Item -ItemType Directory -Force $out | Out-Null
+
+          Copy-Item bin/Release/ImprovedPublicTransport2.dll $out
+          Copy-Item packages/CitiesHarmony.API.*/lib/net35/CitiesHarmony.API.dll $out
+          Copy-Item -Recurse Locale $out/Locale
+
+          Compress-Archive -Path $out -DestinationPath "package/ImprovedPublicTransport2.zip" -Force
+
+      - name: 读取模组版本号
+        id: mod_version
+        shell: pwsh
+        run: |
+          $version = (Select-String -Path ImprovedPublicTransportMod.cs -Pattern 'Version = "([^"]+)"').Matches[0].Groups[1].Value
+          if (-not $version) { $version = "0.0" }
+          "version=$version" >> $env:GITHUB_OUTPUT
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v7
+        with:
+          name: ImprovedPublicTransport2-${{ github.run_number }}
+          path: package/ImprovedPublicTransport2.zip
+
+      - name: 发布 Release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/master'
+        uses: softprops/action-gh-release@v3
+        with:
+          tag_name: v${{ steps.mod_version.outputs.version }}-${{ github.run_number }}
+          name: Improved Public Transport 2 ${{ steps.mod_version.outputs.version }} (build ${{ github.run_number }})
+          files: package/ImprovedPublicTransport2.zip
+          generate_release_notes: true

@@ -30,7 +30,13 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
-    <LangVersion>default</LangVersion>
+    <LangVersion>7.3</LangVersion>
+  </PropertyGroup>
+  <!-- Game assemblies ship in Managed/ (Cities: Skylines 1.21.x) so CI can build without a
+       local game install. Override with /p:CitiesSkylinesManagedPath=... for a local install. -->
+  <PropertyGroup>
+    <CitiesSkylinesManagedPath Condition="'$(CitiesSkylinesManagedPath)' == ''">$(MSBuildProjectDirectory)\Managed</CitiesSkylinesManagedPath>
+    <SkipDeploy Condition="'$(SkipDeploy)' == ''">false</SkipDeploy>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -63,10 +69,18 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System.Core" />
-    <Reference Include="ColossalManaged" />
-    <Reference Include="UnityEngine" />
-    <Reference Include="ICities" />
-    <Reference Include="Assembly-CSharp" />
+    <Reference Include="ColossalManaged">
+      <HintPath>$(CitiesSkylinesManagedPath)\ColossalManaged.dll</HintPath>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>$(CitiesSkylinesManagedPath)\UnityEngine.dll</HintPath>
+    </Reference>
+    <Reference Include="ICities">
+      <HintPath>$(CitiesSkylinesManagedPath)\ICities.dll</HintPath>
+    </Reference>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(CitiesSkylinesManagedPath)\Assembly-CSharp.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -223,7 +237,9 @@
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
+  <!-- .NET 3.5 reference assemblies, used when the .NET 3.5 targeting pack is not installed (e.g. in CI). -->
+  <Import Project="packages\Microsoft.NETFramework.ReferenceAssemblies.net35.1.0.3\build\Microsoft.NETFramework.ReferenceAssemblies.net35.targets" Condition="Exists('packages\Microsoft.NETFramework.ReferenceAssemblies.net35.1.0.3\build\Microsoft.NETFramework.ReferenceAssemblies.net35.targets')" />
+  <PropertyGroup Condition="'$(SkipDeploy)' != 'true'">
     <PostBuildEvent>mkdir "$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(TargetName)"
 del "$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(ProjectName)\$(TargetFileName)"
 xcopy /y "$(TargetPath)" "$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(TargetName)" /s /e

@@ -1,0 +1,3 @@
+# Game reference assemblies must be stored verbatim; line-ending normalization
+# would corrupt the DLLs.
+Managed/*.dll binary

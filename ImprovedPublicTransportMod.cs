@@ -75,18 +75,16 @@ namespace ImprovedPublicTransport2
 
                     CachedNodeData.Init();
 
-                    int maxVehicleCount;
-                    if (Utils.IsModActive(1764208250)) // More Vehicles
-                    {
+                    // Size the cache from the live vehicle buffer instead of a single known mod.
+                    // Newer limit-raising mods (and the current game) no longer match the old
+                    // "More Vehicles" workshop id, so detecting by id under-allocated the cache and
+                    // every vehicle past the vanilla limit threw IndexOutOfRangeException.
+                    int maxVehicleCount = VehicleManager.instance.m_vehicles.m_buffer.Length;
+                    if (maxVehicleCount > VehicleManager.MAX_VEHICLE_COUNT)
                         Debug.LogWarning(
-                            $"{ShortModName}: More Vehicles is enabled, applying compatibility workaround");
-                        maxVehicleCount = ushort.MaxValue + 1;
-                    }
+                            $"{ShortModName}: Extended vehicle limit detected ({maxVehicleCount}), applying compatibility workaround");
                     else
-                    {
-                        Debug.Log($"{ShortModName}: More Vehicles is not enabled");
-                        maxVehicleCount = VehicleManager.MAX_VEHICLE_COUNT;
-                    }
+                        Debug.Log($"{ShortModName}: Vehicle limit: {maxVehicleCount}");
 
                     CachedVehicleData.Init(maxVehicleCount);
 

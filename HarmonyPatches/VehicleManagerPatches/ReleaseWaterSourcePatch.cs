@@ -22,12 +22,15 @@ namespace ImprovedPublicTransport2.HarmonyPatches.VehicleManagerPatches
         }
 
 
-        //the method is called from within ReleaseVehicle method. Patching it leads to the least chance of conflict
+        // Called from ReleaseVehicle for every vehicle, not only transit ones. Vehicles spawned
+        // beyond the cache (non-transit vehicles once an extended vehicle limit is active) must be
+        // ignored instead of throwing IndexOutOfRangeException.
         public static void ReleaseWaterSourcePost(ushort vehicle, ref Vehicle data)
         {
-            if (!CachedVehicleData.m_cachedVehicleData[vehicle].IsEmpty)
+            var cache = CachedVehicleData.m_cachedVehicleData;
+            if (cache != null && vehicle < cache.Length && !cache[vehicle].IsEmpty)
             {
-                CachedVehicleData.m_cachedVehicleData[vehicle] = new VehicleData();
+                cache[vehicle] = new VehicleData();
             }
         }
     }
