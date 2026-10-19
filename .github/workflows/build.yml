@@ -25,28 +25,24 @@ jobs:
       - name: 安装 MSBuild
         uses: microsoft/setup-msbuild@v3
 
-      - name: 安装 NuGet
-        uses: nuget/setup-nuget@v4
-
-      - name: 还原 NuGet 包
-        run: nuget restore ImprovedPublicTransport.sln
-
       - name: 编译（Release）
         # 游戏引用程序集来自仓库内 Managed 目录（Cities: Skylines 1.21.x）；
-        # SkipDeploy 关闭本地游戏目录部署（PostBuild 事件），CI 上不需要。
-        run: msbuild ImprovedPublicTransport.sln /nologo /m /p:Configuration=Release /p:SkipDeploy=true
+        # /restore 还原 PackageReference；SkipDeploy 关闭本地游戏目录部署。
+        run: msbuild ImprovedPublicTransport.sln /nologo /m /restore /p:Configuration=Release /p:SkipDeploy=true
 
       - name: 打包
         shell: pwsh
         run: |
-          $out = "package/ImprovedPublicTransport2"
+          $out = "package/ImprovedPublicTransport3"
           New-Item -ItemType Directory -Force $out | Out-Null
 
-          Copy-Item bin/Release/ImprovedPublicTransport2.dll $out
-          Copy-Item packages/CitiesHarmony.API.*/lib/net35/CitiesHarmony.API.dll $out
-          Copy-Item -Recurse Locale $out/Locale
+          Copy-Item bin/Release/ImprovedPublicTransport3.dll $out
+          Copy-Item bin/Release/CitiesHarmony.API.dll $out
+          Copy-Item -Recurse bin/Release/Translations $out/Translations
+          Copy-Item -Recurse bin/Release/Resources $out/Resources
+          Copy-Item README.md $out
 
-          Compress-Archive -Path $out -DestinationPath "package/ImprovedPublicTransport2.zip" -Force
+          Compress-Archive -Path $out -DestinationPath "package/ImprovedPublicTransport3.zip" -Force
 
       - name: 读取模组版本号
         id: mod_version
@@ -59,14 +55,14 @@ jobs:
       - name: 上传构建产物
         uses: actions/upload-artifact@v7
         with:
-          name: ImprovedPublicTransport2-${{ github.run_number }}
-          path: package/ImprovedPublicTransport2.zip
+          name: ImprovedPublicTransport3-${{ github.run_number }}
+          path: package/ImprovedPublicTransport3.zip
 
       - name: 发布 Release
         if: github.event_name == 'push' && github.ref == 'refs/heads/master'
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.mod_version.outputs.version }}-${{ github.run_number }}
-          name: Improved Public Transport 2 ${{ steps.mod_version.outputs.version }} (build ${{ github.run_number }})
-          files: package/ImprovedPublicTransport2.zip
+          name: Improved Public Transport 3 ${{ steps.mod_version.outputs.version }} (build ${{ github.run_number }})
+          files: package/ImprovedPublicTransport3.zip
           generate_release_notes: true

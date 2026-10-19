@@ -2,12 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ColossalFramework;
-using ImprovedPublicTransport2.OptionsFramework;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.OptionsFramework;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
-using Utils = ImprovedPublicTransport2.Util.Utils;
+using Utils = ImprovedPublicTransport.Util.Utils;
 
-namespace ImprovedPublicTransport2.Data
+namespace ImprovedPublicTransport.Data
 {
     public static class CachedTransportLineData
     {
@@ -34,7 +34,7 @@ namespace ImprovedPublicTransport2.Data
                     else
                         _lineData[index].TargetVehicleCount =
                             OptionsWrapper<Settings.Settings>.Options.DefaultVehicleCount;
-                    _lineData[index].BudgetControl = OptionsWrapper<Settings.Settings>.Options.BudgetControl;
+                    _lineData[index].BudgetControl = OptionsWrapper<Settings.Settings>.Options.BudgetControl == (int)Settings.Settings.BudgetControlModes.Enabled;
                     _lineData[index].Depot = DepotUtil.GetClosestDepot(index,
                         instance1.m_nodes.m_buffer[instance2.m_lines.m_buffer[index].GetStop(0)].m_position);
                     _lineData[index].Unbunching = OptionsWrapper<Settings.Settings>.Options.Unbunching;
@@ -212,7 +212,7 @@ namespace ImprovedPublicTransport2.Data
             _lineData[lineID] = new LineData
             {
                 TargetVehicleCount = OptionsWrapper<Settings.Settings>.Options.DefaultVehicleCount,
-                BudgetControl = OptionsWrapper<Settings.Settings>.Options.BudgetControl,
+                BudgetControl = OptionsWrapper<Settings.Settings>.Options.BudgetControl == (int)Settings.Settings.BudgetControlModes.Enabled,
                 Unbunching = OptionsWrapper<Settings.Settings>.Options.Unbunching
             };
         }
@@ -288,11 +288,16 @@ namespace ImprovedPublicTransport2.Data
         {
             if (_lineData[lineID].Prefabs != null)
             {
-                var array = _lineData[lineID].Prefabs.ToArray();
-                if (array.Length != 0)
+                var linePrefabs = _lineData[lineID].Prefabs;
+                int count = linePrefabs.Count;
+                if (count != 0)
                 {
-                    var index = Singleton<SimulationManager>.instance.m_randomizer.Int32((uint) array.Length);
-                    return array[index];
+                    var index = (int)Singleton<SimulationManager>.instance.m_randomizer.Int32((uint)count);
+                    int i = 0;
+                    foreach (var name in linePrefabs)
+                    {
+                        if (i++ == index) return name;
+                    }
                 }
             }
             var itemClass = Singleton<TransportManager>.instance.m_lines.m_buffer[lineID]

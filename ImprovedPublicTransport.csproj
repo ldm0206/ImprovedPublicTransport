@@ -1,251 +1,143 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!--Project was exported from assembly: C:\Games\Steam\steamapps\workshop\content\255710\424106600\ImprovedPublicTransport.dll-->
+<?xml version="1.0" encoding="utf-8"?>
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{36C6DFFD-7B77-4665-91F9-5AAF6ED147A9}</ProjectGuid>
+    <TargetFramework>net35</TargetFramework>
+    <AssemblyName>ImprovedPublicTransport3</AssemblyName>
+    <RootNamespace>ImprovedPublicTransport3</RootNamespace>
     <OutputType>Library</OutputType>
-    <AssemblyName>ImprovedPublicTransport2</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <RootNamespace>ImprovedPublicTransport2</RootNamespace>
-    <FileUpgradeFlags>
-    </FileUpgradeFlags>
-    <UpgradeBackupLocation>
-    </UpgradeBackupLocation>
-    <OldToolsVersion>3.5</OldToolsVersion>
-    <PublishUrl>publish\</PublishUrl>
-    <Install>true</Install>
-    <InstallFrom>Disk</InstallFrom>
-    <UpdateEnabled>false</UpdateEnabled>
-    <UpdateMode>Foreground</UpdateMode>
-    <UpdateInterval>7</UpdateInterval>
-    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
-    <UpdatePeriodically>false</UpdatePeriodically>
-    <UpdateRequired>false</UpdateRequired>
-    <MapFileExtensions>true</MapFileExtensions>
-    <ApplicationRevision>0</ApplicationRevision>
-    <ApplicationVersion>1.0.6177.17409</ApplicationVersion>
-    <IsWebBootstrapper>false</IsWebBootstrapper>
-    <UseApplicationTrust>false</UseApplicationTrust>
-    <BootstrapperEnabled>true</BootstrapperEnabled>
-    <LangVersion>9.0</LangVersion>
-  </PropertyGroup>
-  <!-- Game assemblies ship in Managed/ (Cities: Skylines 1.21.x) so CI can build without a
-       local game install. Override with /p:CitiesSkylinesManagedPath=... for a local install. -->
-  <PropertyGroup>
-    <CitiesSkylinesManagedPath Condition="'$(CitiesSkylinesManagedPath)' == ''">$(MSBuildProjectDirectory)\Managed</CitiesSkylinesManagedPath>
+    <Deterministic>false</Deterministic>
+    <LangVersion>12.0</LangVersion>
+    <GenerateAssemblyConfigurationAttribute>false</GenerateAssemblyConfigurationAttribute>
+    <GenerateAssemblyCompanyAttribute>false</GenerateAssemblyCompanyAttribute>
+    <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
+    <GenerateAssemblyVersionAttribute>false</GenerateAssemblyVersionAttribute>
+    <GenerateAssemblyFileVersionAttribute>false</GenerateAssemblyFileVersionAttribute>
+    <GenerateAssemblyTitleAttribute>false</GenerateAssemblyTitleAttribute>
+    <GenerateAssemblyDescriptionAttribute>false</GenerateAssemblyDescriptionAttribute>
+    <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
+    <GenerateAssemblyTrademarkAttribute>false</GenerateAssemblyTrademarkAttribute>
+    <GenerateComVisibleAttribute>false</GenerateComVisibleAttribute>
+    <GenerateAssemblyInformationalVersionAttribute>false</GenerateAssemblyInformationalVersionAttribute>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <GenerateDepsFile>false</GenerateDepsFile>
+    <GenerateRuntimeConfigurationFiles>false</GenerateRuntimeConfigurationFiles>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <!-- Game assemblies ship in Managed/ (Cities: Skylines 1.21.x) so CI can build without a
+         local game install. Override with /p:GamePath=... for a local install. -->
+    <GamePath Condition="'$(GamePath)' == ''">$(MSBuildProjectDirectory)\Managed</GamePath>
+    <AutoDeploy Condition="'$(AutoDeploy)' == ''">true</AutoDeploy>
     <SkipDeploy Condition="'$(SkipDeploy)' == ''">false</SkipDeploy>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
+    <DebugSymbols>false</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CitiesHarmony.API">
-      <HintPath>.\packages\CitiesHarmony.API.2.1.0\lib\net35\CitiesHarmony.API.dll</HintPath>
-      <Private>True</Private>
+    <PackageReference Include="CitiesHarmony.API" Version="2.2.0" />
+    <PackageReference Include="CitiesHarmony.Harmony" Version="2.2.2" ExcludeAssets="runtime" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies.net35" Version="1.0.3" PrivateAssets="all" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Assembly-CSharp">
+      <HintPath>$(GamePath)/Assembly-CSharp.dll</HintPath>
+      <Private>false</Private>
     </Reference>
-    <Reference Include="CitiesHarmony.Harmony">
-      <HintPath>.\packages\CitiesHarmony.Harmony.2.2.0\lib\net35\CitiesHarmony.Harmony.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="System.Core" />
     <Reference Include="ColossalManaged">
-      <HintPath>$(CitiesSkylinesManagedPath)\ColossalManaged.dll</HintPath>
-    </Reference>
-    <Reference Include="UnityEngine">
-      <HintPath>$(CitiesSkylinesManagedPath)\UnityEngine.dll</HintPath>
+      <HintPath>$(GamePath)/ColossalManaged.dll</HintPath>
+      <Private>false</Private>
     </Reference>
     <Reference Include="ICities">
-      <HintPath>$(CitiesSkylinesManagedPath)\ICities.dll</HintPath>
+      <HintPath>$(GamePath)/ICities.dll</HintPath>
+      <Private>false</Private>
     </Reference>
-    <Reference Include="Assembly-CSharp">
-      <HintPath>$(CitiesSkylinesManagedPath)\Assembly-CSharp.dll</HintPath>
+    <Reference Include="UnityEngine">
+      <HintPath>$(GamePath)/UnityEngine.dll</HintPath>
+      <Private>false</Private>
     </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Xml" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="BuildingExtension.cs" />
-    <Compile Include="Command\SelectVehicleTypesCommand.cs" />
-    <Compile Include="HarmonyPatches\HarmonyId.cs" />
-    <Compile Include="HarmonyPatches\PublicTransportStopButtonPatches\OnMouseDownPatch.cs" />
-    <Compile Include="HarmonyPatches\PublicTransportVehicleButtonPatches\OnMouseDownPatch.cs" />
-    <Compile Include="HarmonyPatches\PublicTransportWorldInfoPanelPatches\UpdateStopButtonsPatch.cs" />
-    <Compile Include="HarmonyPatches\PublicTransportWorldInfoPanelPatches\RefreshVehicleButtonsPatch.cs" />
-    <Compile Include="HarmonyPatches\TransportLinePatches\CanLeaveStopPatch.cs" />
-    <Compile Include="HarmonyPatches\XYZVehicleAIPatches\CanLeavePatch.cs" />
-    <Compile Include="Data\CachedNodeData.cs" />
-    <Compile Include="Data\CachedTransportLineData.cs" />
-    <Compile Include="Data\CachedVehicleData.cs" />
-    <Compile Include="Data\GameDefault.cs" />
-    <Compile Include="Data\LineData.cs" />
-    <Compile Include="Data\MovingAverage.cs" />
-    <Compile Include="Data\NodeData.cs" />
-    <Compile Include="Data\PrefabData.cs" />
-    <Compile Include="Data\SerializableDataExtension.cs" />
-    <Compile Include="Data\VehicleData.cs" />
-    <Compile Include="ReverseDetours\CommonBuildingAIReverseDetour.cs" />
-    <Compile Include="HarmonyPatches\BuildingManagerPatches\GetDepotLevelsPatch.cs" />
-    <Compile Include="HarmonyPatches\DepotAIPatches\ClassMatchesPatch.cs" />
-    <Compile Include="HarmonyPatches\DepotAIPatches\StartTransferPatch.cs" />
-    <Compile Include="HarmonyPatches\NetManagerPatches\ReleaseNodePatch.cs" />
-    <Compile Include="HarmonyPatches\PublicTransportLineVehicleSelectorPatches\GetVehicleInfoPatch.cs" />
-    <Compile Include="HarmonyPatches\TransportLinePatches\GetLineVehiclePatch.cs" />
-    <Compile Include="HarmonyPatches\TransportLinePatches\SimulationStepPatch.cs" />
-    <Compile Include="HarmonyPatches\TransportManagerPatches\CheckTransportLineVehiclesPatch.cs" />
-    <Compile Include="HarmonyPatches\VehicleManagerPatches\ReleaseWaterSourcePatch.cs" />
-    <Compile Include="HarmonyPatches\XYZVehicleAIPatches\LoadPassengersPatch.cs" />
-    <Compile Include="HarmonyPatches\XYZVehicleAIPatches\UnloadPassengersPatch.cs" />
-    <Compile Include="ItemClassTriplet.cs" />
-    <Compile Include="LanguageFormat\LanguageDictionaryWrapper.cs" />
-    <Compile Include="LanguageFormat\PlainTextLanguageDeserializer.cs" />
-    <Compile Include="LocaleModifier.cs" />
-    <Compile Include="Localization.cs" />
-    <Compile Include="OptionsFramework\Attibutes\AbstractOptionsAttribute.cs" />
-    <Compile Include="OptionsFramework\Attibutes\ButtonAttribute.cs" />
-    <Compile Include="OptionsFramework\Attibutes\CheckboxAttribute.cs" />
-    <Compile Include="OptionsFramework\Attibutes\DontTranslateDescriptionAttribute.cs" />
-    <Compile Include="OptionsFramework\Attibutes\DropDownAttribute.cs" />
-    <Compile Include="OptionsFramework\Attibutes\HideConditionAttribute.cs" />
-    <Compile Include="OptionsFramework\Attibutes\LabelAttribute.cs" />
-    <Compile Include="OptionsFramework\Attibutes\OptionsAttribute.cs" />
-    <Compile Include="OptionsFramework\Attibutes\SliderAttribute.cs" />
-    <Compile Include="OptionsFramework\Attibutes\TextFieldAttribute.cs" />
-    <Compile Include="OptionsFramework\Extensions\CommonExtensions.cs" />
-    <Compile Include="OptionsFramework\Extensions\UIHelperBaseExtensions.cs" />
-    <Compile Include="OptionsFramework\OptionsWrapper.cs" />
-    <Compile Include="OptionsFramework\Util.cs" />
-    <Compile Include="Data\VehiclePrefabs.cs" />
-    <Compile Include="Query\ActiveVehiclesQuery.cs" />
-    <Compile Include="Query\AvailableVehiclesQuery.cs" />
-    <Compile Include="Query\QueuedVehicleQuery.cs" />
-    <Compile Include="Query\SelectedVehicleTypesQuery.cs" />
-    <Compile Include="Query\WaitingPassengerCountQuery.cs" />
-    <Compile Include="Query\WorldInfoCurrentLineIDQuery.cs" />
-    <Compile Include="RedirectionFramework\AssemblyRedirector.cs" />
-    <Compile Include="RedirectionFramework\Attributes\IgnoreConditions\DisableAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\IgnoreConditionAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\RedirectAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\RedirectMethodAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\RedirectReverseAttribute.cs" />
-    <Compile Include="RedirectionFramework\Attributes\TargetTypeAttribute.cs" />
-    <Compile Include="RedirectionFramework\Extensions\TypeExtension.cs" />
-    <Compile Include="RedirectionFramework\RedirectionHelper.cs" />
-    <Compile Include="RedirectionFramework\RedirectionUtil.cs" />
-    <Compile Include="RedirectionFramework\Redirector.cs" />
-    <Compile Include="RedirectionFramework\Tuple.cs" />
-    <Compile Include="Settings\Settings.cs" />
-    <Compile Include="Settings\SettingsActions.cs" />
-    <Compile Include="Settings\VehicleEditorPositions.cs" />
-    <Compile Include="TranslationFramework\DefaultLanguageDeserializer.cs" />
-    <Compile Include="TranslationFramework\Language.cs" />
-    <Compile Include="TranslationFramework\DefaultLanguage.cs" />
-    <Compile Include="TranslationFramework\LanguageDeserializer.cs" />
-    <Compile Include="TranslationFramework\LocalizationManager.cs" />
-    <Compile Include="TranslationFramework\TranslatableAttribute.cs" />
-    <Compile Include="TranslationFramework\Util.cs" />
-    <Compile Include="UI\AlgernonCommons\AssemblyUtils.cs" />
-    <Compile Include="UI\AlgernonCommons\Logging.cs" />
-    <Compile Include="UI\AlgernonCommons\ModBase.cs" />
-    <Compile Include="UI\AlgernonCommons\PrefabUtils.cs" />
-    <Compile Include="UI\AlgernonCommons\UIButtons.cs" />
-    <Compile Include="UI\AlgernonCommons\UIDropDowns.cs" />
-    <Compile Include="UI\AlgernonCommons\UIFonts.cs" />
-    <Compile Include="UI\AlgernonCommons\UILabels.cs" />
-    <Compile Include="UI\AlgernonCommons\UIList.cs" />
-    <Compile Include="UI\AlgernonCommons\UIScrollbars.cs" />
-    <Compile Include="UI\AlgernonCommons\UITextFields.cs" />
-    <Compile Include="UI\AlgernonCommons\UITextures.cs" />
-    <Compile Include="UI\AlgernonCommons\UIToolTips.cs" />
-    <Compile Include="UI\DontCryJustDieCommons\DropDown.cs" />
-    <Compile Include="UI\DontCryJustDieCommons\DropDownRow.cs" />
-    <Compile Include="UI\PanelExtenders\PanelExtenderCityService.cs" />
-    <Compile Include="UI\PanelExtenders\PanelExtenderLine.cs" />
-    <Compile Include="UI\PanelExtenders\PanelExtenderVehicle.cs" />
-    <Compile Include="UI\PrefabPanel.cs" />
-    <Compile Include="UI\PrefabPanelManager.cs" />
-    <Compile Include="UI\AlgernonCommons\UIListRow.cs" />
-    <Compile Include="UI\CopyPaste.cs" />
-    <Compile Include="UI\PreviewRenderer\PreviewPanel.cs" />
-    <Compile Include="UI\PreviewRenderer\PreviewRenderer.cs" />
-    <Compile Include="UI\PublicTransportStopWorldInfoPanel.cs" />
-    <Compile Include="UI\SelectedVehiclePanel.cs" />
-    <Compile Include="UI\StopListBox.cs" />
-    <Compile Include="UI\StopListBoxRow.cs" />
-    <Compile Include="UI\VehicleEditor.cs" />
-    <Compile Include="UI\VehicleListBox.cs" />
-    <Compile Include="UI\VehicleListBoxRow.cs" />
-    <Compile Include="UI\VehicleSelection.cs" />
-    <Compile Include="UI\AvailableVehiclePanel.cs" />
-    <Compile Include="UI\VehicleSelectionRow.cs" />
-    <Compile Include="Util\DepotUtil.cs" />
-    <Compile Include="Util\PatchUtil.cs" />
-    <Compile Include="Util\TransportLineUtil.cs" />
-    <Compile Include="Util\UIUtils.cs" />
-    <Compile Include="Util\Utils.cs" />
-    <Compile Include="Util\VehicleUtil.cs" />
-    <Compile Include="LineWatcher.cs" />
-    <Compile Include="SimHelper.cs" />
-    <Compile Include="ReverseDetours\TransportLineReverseDetour.cs" />
-    <Compile Include="ImprovedPublicTransportMod.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="*.cs" />
+    <Compile Include="Command/**/*.cs" />
+    <Compile Include="Data/**/*.cs" />
+    <Compile Include="HarmonyPatches/**/*.cs" />
+    <Compile Include="LanguageFormat/**/*.cs" />
+    <Compile Include="OptionsFramework/**/*.cs" Exclude="OptionsFramework/Properties/**/*.cs" />
+    <Compile Include="Query/**/*.cs" />
+    <Compile Include="RedirectionFramework/**/*.cs" Exclude="RedirectionFramework/Properties/**/*.cs" />
+    <Compile Include="AlgernonCommons/**/*.cs" Exclude="AlgernonCommons/Properties/**/*.cs" />
+    <Compile Include="ReverseDetours/**/*.cs" />
+    <Compile Include="Settings/**/*.cs" />
+    <Compile Include="TranslationFramework/**/*.cs" />
+    <Compile Include="Integration/**/*.cs" />
+    <Compile Include="UI/**/*.cs" />
+    <Compile Include="Util/**/*.cs" />
+    <Compile Include="Properties/**/*.cs" />
   </ItemGroup>
+
   <ItemGroup>
-    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
-      <Visible>False</Visible>
-      <ProductName>.NET Framework 3.5 SP1</ProductName>
-      <Install>true</Install>
-    </BootstrapperPackage>
+    <None Update="Translations/*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Resources/*">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="Integration/TicketPriceCustomizer/Resources/*">
+      <Link>Resources/%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <Content Include="Integration/FlightTracker/Translations/*.csv">
+      <Link>Translations/%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Integration/FlightTracker/Translations/Core/*.csv">
+      <Link>Translations/Core/%(Filename)%(Extension)</Link>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
+
+  <!-- Include FlightTracker translations for deployment (preserve FT translations separately) -->
   <ItemGroup>
-    <Content Include="Locale\de.txt" />
-    <Content Include="Locale\en.txt" />
-    <Content Include="Locale\es.txt" />
-    <Content Include="Locale\fr.txt" />
-    <Content Include="Locale\it.txt" />
-    <Content Include="Locale\ja.txt" />
-    <Content Include="Locale\kr.txt" />
-    <Content Include="Locale\ko.txt" />
-    <Content Include="Locale\pl.txt" />
-    <Content Include="Locale\pt.txt" />
-    <Content Include="Locale\ru.txt" />
-    <Content Include="Locale\zh.txt" />
-    <Content Include="Locale\zh-cn.txt" />
-    <Content Include="Locale\zh-tw.txt" />
+    <FTTranslationsTopLevel Include="$(ProjectDir)Integration/FlightTracker/Translations/*.csv" Condition="Exists('$(ProjectDir)Integration/FlightTracker/Translations')" />
+    <FTTranslationsCore Include="$(ProjectDir)Integration/FlightTracker/Translations/Core/*.csv" Condition="Exists('$(ProjectDir)Integration/FlightTracker/Translations/Core')" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- .NET 3.5 reference assemblies, used when the .NET 3.5 targeting pack is not installed (e.g. in CI). -->
-  <Import Project="packages\Microsoft.NETFramework.ReferenceAssemblies.net35.1.0.3\build\Microsoft.NETFramework.ReferenceAssemblies.net35.targets" Condition="Exists('packages\Microsoft.NETFramework.ReferenceAssemblies.net35.1.0.3\build\Microsoft.NETFramework.ReferenceAssemblies.net35.targets')" />
-  <PropertyGroup Condition="'$(SkipDeploy)' != 'true'">
-    <PostBuildEvent>mkdir "$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(TargetName)"
-del "$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(ProjectName)\$(TargetFileName)"
-xcopy /y "$(TargetPath)" "$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(TargetName)" /s /e
-mkdir "$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(TargetName)"\Locale
-xcopy /y "$(ProjectDir)\Locale" "$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(TargetName)\Locale" /s /e
-xcopy /y "$(SolutionDir)\packages\CitiesHarmony.API.2.1.0\lib\net35\CitiesHarmony.API.dll" "$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(TargetName)" /s /e
-</PostBuildEvent>
-  </PropertyGroup>
+  <Target Name="DeployToModDirectory" AfterTargets="AfterBuild" Condition="'$(AutoDeploy)' == 'true' And '$(SkipDeploy)' != 'true'">
+    <PropertyGroup>
+      <ModDirectory Condition="'$(OS)' == 'Windows_NT'">$(LOCALAPPDATA)\Colossal Order\Cities_Skylines\Addons\Mods\$(ProjectName)\</ModDirectory>
+      <ModDirectory Condition="'$(OS)' != 'Windows_NT'">$(HOME)/Library/Application Support/Colossal Order/Cities_Skylines/Addons/Mods/$(ProjectName)/</ModDirectory>
+    </PropertyGroup>
+    <ItemGroup>
+      <LocaleFiles Include="$(ProjectDir)Translations/*.txt" />
+      <TranslationFiles Include="$(ProjectDir)Translations/*.csv" />
+      <ResourceFiles Include="$(ProjectDir)Resources/*" />
+      <IconFiles Include="$(ProjectDir)Resources/*" />
+      <LegacyIconFiles Include="$(ProjectDir)Integration/TicketPriceCustomizer/Resources/*" />
+      <CitiesHarmonyApi Include="$(TargetDir)CitiesHarmony.API.dll" />
+      <FTTranslationsTopLevelFiles Include="@(FTTranslationsTopLevel)" />
+      <FTTranslationsCoreFiles Include="@(FTTranslationsCore)" />
+    </ItemGroup>
+    <!-- Remove existing mod folder and deploy only the IPT assembly and CitiesHarmony.API, plus Translations and Resources -->
+    <RemoveDir Directories="$(ModDirectory)" />
+    <MakeDir Directories="$(ModDirectory)" />
+    <Copy SourceFiles="$(TargetPath)" DestinationFolder="$(ModDirectory)" />
+    <Copy SourceFiles="$(ProjectDir)README.md" DestinationFolder="$(ModDirectory)" Condition="Exists('$(ProjectDir)README.md')" />
+    <Copy SourceFiles="$(TargetDir)CitiesHarmony.API.dll" DestinationFolder="$(ModDirectory)" Condition="Exists('$(TargetDir)CitiesHarmony.API.dll')" />
+    <Copy SourceFiles="@(LocaleFiles)" DestinationFolder="$(ModDirectory)Translations/Core/" />
+    <Copy SourceFiles="@(TranslationFiles)" DestinationFolder="$(ModDirectory)Translations/" />
+    <Copy SourceFiles="@(ResourceFiles)" DestinationFolder="$(ModDirectory)Resources/" />
+    <Copy SourceFiles="@(IconFiles)" DestinationFolder="$(ModDirectory)Resources/" />
+    <Copy SourceFiles="@(LegacyIconFiles)" DestinationFolder="$(ModDirectory)Resources/" Condition="Exists('%(LegacyIconFiles.Identity)')" />
+    <Copy SourceFiles="@(FTTranslationsTopLevelFiles)" DestinationFolder="$(ModDirectory)Translations/" Condition="Exists('%(FTTranslationsTopLevelFiles.Identity)')" />
+    <Copy SourceFiles="@(FTTranslationsCoreFiles)" DestinationFolder="$(ModDirectory)Translations/" Condition="Exists('%(FTTranslationsCoreFiles.Identity)')" />
+  </Target>
+
 </Project>

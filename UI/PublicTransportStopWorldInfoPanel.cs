@@ -9,16 +9,16 @@ using System.Collections.Generic;
 using System.Linq;
 using ColossalFramework;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.OptionsFramework;
-using ImprovedPublicTransport2.Query;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.UI.DontCryJustDieCommons;
-using ImprovedPublicTransport2.UI.PanelExtenders;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.OptionsFramework;
+using ImprovedPublicTransport.Query;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.UI.DontCryJustDieCommons;
+using ImprovedPublicTransport.UI.PanelExtenders;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
-using UIUtils = ImprovedPublicTransport2.Util.UIUtils;
+using UIUtils = ImprovedPublicTransport.Util.UIUtils;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
     public class PublicTransportStopWorldInfoPanel : UIPanel
     {
@@ -47,6 +47,10 @@ namespace ImprovedPublicTransport2.UI
         private UIButton m_closeStopsUnbunching;
         private UILabel m_Line;
         private UIButton m_DeleteStop;
+        private int _cachedPassengerCount;
+        private byte _cachedMaxWait;
+        private float _passengerQueryTimer;
+        private const float PassengerQueryInterval = 0.5f;
 
         public override void Start()
         {
@@ -67,9 +71,8 @@ namespace ImprovedPublicTransport2.UI
             this.CheckForClose();
         }
 
-        public override void LateUpdate()
+        public new void LateUpdate()
         {
-            base.LateUpdate();
             if (!this.isVisible)
                 return;
             if ((UnityEngine.Object) this.m_closeStopsUnbunching == (UnityEngine.Object) null)
@@ -526,11 +529,11 @@ namespace ImprovedPublicTransport2.UI
 
         private void ProcessNodes(System.Action<ushort> processNode)
         {
-            NetManager instance = Singleton<NetManager>.instance;
+            NetManager nm = Singleton<NetManager>.instance;
             bool flag = false;
-            NetNode netNode1 = instance.m_nodes.m_buffer[(int) this.m_InstanceID.NetNode];
+            NetNode netNode1 = nm.m_nodes.m_buffer[(int) this.m_InstanceID.NetNode];
             Vector3 position = netNode1.m_position;
-            ItemClass.SubService subService = netNode1.Info.m_class.m_subService;
+            ItemClass.SubService subService = netNode1.Info?.m_class?.m_subService ?? ItemClass.SubService.None;
             ushort building = Singleton<BuildingManager>.instance.FindBuilding(position, 100f,
                 ItemClass.Service.PublicTransport, subService, Building.Flags.Active, Building.Flags.Untouchable);
             if ((int) building != 0)
@@ -546,12 +549,24 @@ namespace ImprovedPublicTransport2.UI
             }
             if (flag)
                 return;
-            for (int index = 0; index < 32768; ++index)
+            // Use NetManager's spatial node grid instead of scanning all 32768 nodes.
+            // Grid: 64-unit cells, world spans [-8640..8640], offset 135 → 270×270 cells.
+            int gridX = Mathf.Clamp((int)(position.x / 64f + 135f), 0, 269);
+            int gridZ = Mathf.Clamp((int)(position.z / 64f + 135f), 0, 269);
+            for (int gz = Mathf.Max(0, gridZ - 1); gz <= Mathf.Min(269, gridZ + 1); gz++)
             {
-                NetNode netNode2 = instance.m_nodes.m_buffer[index];
-                if (netNode2.m_flags != NetNode.Flags.None && (int) netNode2.m_transportLine != 0 &&
-                    position == netNode2.m_position)
-                    processNode((ushort) index);
+                for (int gx = Mathf.Max(0, gridX - 1); gx <= Mathf.Min(269, gridX + 1); gx++)
+                {
+                    ushort nodeIdx = nm.m_nodeGrid[gz * 270 + gx];
+                    while (nodeIdx != 0)
+                    {
+                        ref NetNode node = ref nm.m_nodes.m_buffer[nodeIdx];
+                        if (node.m_flags != NetNode.Flags.None && node.m_transportLine != 0
+                            && node.m_position == position)
+                            processNode(nodeIdx);
+                        nodeIdx = node.m_nextGridNode;
+                    }
+                }
             }
         }
 
@@ -576,7 +591,6 @@ namespace ImprovedPublicTransport2.UI
                     new Func<ushort, string>(this.IDToName));
                 this.m_Line.text = Singleton<TransportManager>.instance.GetLineName(transportLine);
                 this.Show();
-                this.LateUpdate();
             }
             else
             {
@@ -662,7 +676,21 @@ namespace ImprovedPublicTransport2.UI
         private void UpdateBindings()
         {
             ushort netNode = this.m_InstanceID.NetNode;
-            int num1 = WaitingPassengerCountQuery.Query(netNode, out _, out var max);
+            _passengerQueryTimer += Time.deltaTime;
+            int num1;
+            byte max;
+            if (_passengerQueryTimer >= PassengerQueryInterval)
+            {
+                _passengerQueryTimer = 0f;
+                num1 = WaitingPassengerCountQuery.Query(netNode, out _, out max);
+                _cachedPassengerCount = num1;
+                _cachedMaxWait = max;
+            }
+            else
+            {
+                num1 = _cachedPassengerCount;
+                max = _cachedMaxWait;
+            }
             byte num2 = (byte) ((uint) byte.MaxValue - (uint) max);
             this.m_PassengerCount.text = string.Format(Localization.Get("STOP_PANEL_WAITING_PEOPLE"), (object) num1);
             this.m_BoredCountdown.text = string.Format(Localization.Get("STOP_PANEL_BORED_TIMER"),

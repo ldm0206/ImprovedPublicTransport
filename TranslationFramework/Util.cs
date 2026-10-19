@@ -3,7 +3,7 @@ using System.Linq;
 using ColossalFramework.Plugins;
 using ICities;
 
-namespace ImprovedPublicTransport2.TranslationFramework
+namespace ImprovedPublicTransport.TranslationFramework
 {
     public static class Util
     {

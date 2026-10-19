@@ -1,10 +1,10 @@
 using System;
 using System.Collections.Generic;
 using ColossalFramework;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.ReverseDetours;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.ReverseDetours;
 
-namespace ImprovedPublicTransport2.Util
+namespace ImprovedPublicTransport.Util
 {
     public static class TransportLineUtil
     {

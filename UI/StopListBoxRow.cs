@@ -6,12 +6,12 @@
 
 using ColossalFramework;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.Query;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Query;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
-using Utils = ImprovedPublicTransport2.Util.Utils;
+using Utils = ImprovedPublicTransport.Util.Utils;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
   public class StopListBoxRow : UIPanel
   {

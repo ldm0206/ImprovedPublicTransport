@@ -1,7 +1,7 @@
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.NetManagerPatches
+namespace ImprovedPublicTransport.HarmonyPatches.NetManagerPatches
 {
     public class ReleaseNodePatch
     {

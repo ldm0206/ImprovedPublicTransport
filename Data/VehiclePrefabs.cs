@@ -1,17 +1,18 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ColossalFramework;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Util;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.Data
+namespace ImprovedPublicTransport.Data
 {
     public class VehiclePrefabs : Singleton<VehiclePrefabs>
     {
 
         private PrefabData[] _busPrefabData;
         private PrefabData[] _biofuelBusPrefabData;
+        private PrefabData[] _intercityBusPrefabData;
         private PrefabData[] _metroPrefabData;
         private PrefabData[] _trainPrefabData;
         private PrefabData[] _airportTrainPrefabData;
@@ -29,6 +30,7 @@ namespace ImprovedPublicTransport2.Data
         private PrefabData[] _helicopterPrefabData;
 
         private Dictionary<string, PrefabData> _allPrefabData;
+        private Dictionary<int, PrefabData> _prefabDataByIndex;
 
         public static void Init()
         {
@@ -38,7 +40,15 @@ namespace ImprovedPublicTransport2.Data
         [CanBeNull]
         public PrefabData FindByName([NotNull] string prefabName)
         {
-            return _allPrefabData[prefabName];
+            _allPrefabData.TryGetValue(prefabName, out var result);
+            return result;
+        }
+
+        [CanBeNull]
+        public PrefabData FindByIndex(int prefabDataIndex)
+        {
+            _prefabDataByIndex.TryGetValue(prefabDataIndex, out var result);
+            return result;
         }
 
         public PrefabData[] GetPrefabs(ItemClass.Service service,
@@ -74,12 +84,17 @@ namespace ImprovedPublicTransport2.Data
         private PrefabData[] GetPrefabsNoLogging(ItemClass.Service service,
             ItemClass.SubService subService)
         {
-            var prefabs = instance.GetPrefabsNoLogging(service, subService, ItemClass.Level.Level1)
-                .Concat(instance.GetPrefabsNoLogging(service, subService, ItemClass.Level.Level2))
-                .Concat(instance.GetPrefabsNoLogging(service, subService, ItemClass.Level.Level3))
-                .Concat(instance.GetPrefabsNoLogging(service, subService, ItemClass.Level.Level4))
-                .ToArray();
-            return prefabs;
+            var l1 = instance.GetPrefabsNoLogging(service, subService, ItemClass.Level.Level1);
+            var l2 = instance.GetPrefabsNoLogging(service, subService, ItemClass.Level.Level2);
+            var l3 = instance.GetPrefabsNoLogging(service, subService, ItemClass.Level.Level3);
+            var l4 = instance.GetPrefabsNoLogging(service, subService, ItemClass.Level.Level4);
+            if (l2.Length == 0 && l3.Length == 0 && l4.Length == 0) return l1;
+            var result = new PrefabData[l1.Length + l2.Length + l3.Length + l4.Length];
+            l1.CopyTo(result, 0);
+            l2.CopyTo(result, l1.Length);
+            l3.CopyTo(result, l1.Length + l2.Length);
+            l4.CopyTo(result, l1.Length + l2.Length + l3.Length);
+            return result;
         }
 
         private PrefabData[] GetPrefabsNoLogging(ItemClass.Service service,
@@ -137,6 +152,8 @@ namespace ImprovedPublicTransport2.Data
                 {
                     switch (subService)
                     {
+                        case ItemClass.SubService.PublicTransportBus:
+                            return _intercityBusPrefabData;
                         case ItemClass.SubService.PublicTransportTours:
                             return _sightseeingBusPrefabData;
                         case ItemClass.SubService.PublicTransportPlane:
@@ -151,6 +168,7 @@ namespace ImprovedPublicTransport2.Data
         private void RegisterPrefabs()
         {
             _allPrefabData = new Dictionary<string, PrefabData>();
+            _prefabDataByIndex = new Dictionary<int, PrefabData>();
             var busList = new List<PrefabData>();
             var biofuelBusList = new List<PrefabData>();
             var metroList = new List<PrefabData>();
@@ -166,6 +184,7 @@ namespace ImprovedPublicTransport2.Data
             var cableCarList = new List<PrefabData>();
             var ferryList = new List<PrefabData>();
             var sightseeingBusList = new List<PrefabData>();
+            var intercityBusList = new List<PrefabData>();
             var trolleybusList = new List<PrefabData>();
             var helicopterList = new List<PrefabData>();
 
@@ -298,6 +317,11 @@ namespace ImprovedPublicTransport2.Data
                     {
                         switch (subService)
                         {
+                            case ItemClass.SubService.PublicTransportBus:
+                            {
+                                intercityBusList.Add(RegisterPrefab(prefab));
+                                continue;
+                            }
                             case ItemClass.SubService.PublicTransportTours:
                             {
                                 sightseeingBusList.Add(RegisterPrefab(prefab));
@@ -346,6 +370,7 @@ namespace ImprovedPublicTransport2.Data
             _ferryPrefabData = ferryList.ToArray();
             _cableCarPrefabData = cableCarList.ToArray();
             _sightseeingBusPrefabData = sightseeingBusList.ToArray();
+            _intercityBusPrefabData = intercityBusList.ToArray();
             _trolleybusPrefabData = trolleybusList.ToArray();
             _helicopterPrefabData = helicopterList.ToArray();
         }
@@ -355,6 +380,7 @@ namespace ImprovedPublicTransport2.Data
         {
             var prefabData = new PrefabData(prefab);
             _allPrefabData.Add(prefab.name, prefabData);
+            _prefabDataByIndex[prefab.m_prefabDataIndex] = prefabData;
             return prefabData;
         }
     }

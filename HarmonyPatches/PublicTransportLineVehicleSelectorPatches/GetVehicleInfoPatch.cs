@@ -1,6 +1,6 @@
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Util;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.PublicTransportLineVehicleSelectorPatches
+namespace ImprovedPublicTransport.HarmonyPatches.PublicTransportLineVehicleSelectorPatches
 {
     public class GetVehicleInfoPatch
     {

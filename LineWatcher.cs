@@ -6,12 +6,12 @@
 
 using ColossalFramework;
 using System.Collections.Generic;
-using ImprovedPublicTransport2.OptionsFramework;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.OptionsFramework;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2
+namespace ImprovedPublicTransport
 {
   public class LineWatcher : MonoBehaviour
   {

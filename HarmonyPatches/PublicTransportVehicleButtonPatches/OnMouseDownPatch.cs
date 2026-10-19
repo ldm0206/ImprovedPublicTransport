@@ -1,8 +1,8 @@
 ﻿using ColossalFramework.UI;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.PublicTransportVehicleButtonPatches
+namespace ImprovedPublicTransport.HarmonyPatches.PublicTransportVehicleButtonPatches
 {
 
     public static class OnMouseDownPatch

@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using System.Linq;
-using ImprovedPublicTransport2.Data;
+using ImprovedPublicTransport.Data;
 using JetBrains.Annotations;
 
-namespace ImprovedPublicTransport2.Query
+namespace ImprovedPublicTransport.Query
 {
     public static class SelectedVehicleTypesQuery
     {

@@ -6,11 +6,11 @@
 
 using System;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
-using UIUtils = ImprovedPublicTransport2.Util.UIUtils;
+using UIUtils = ImprovedPublicTransport.Util.UIUtils;
 
-namespace ImprovedPublicTransport2.UI.DontCryJustDieCommons
+namespace ImprovedPublicTransport.UI.DontCryJustDieCommons
 {
   public class DropDownRow : UIPanel
   {

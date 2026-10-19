@@ -1,10 +1,10 @@
 using System.Collections.Generic;
 using ColossalFramework;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 using JetBrains.Annotations;
 
-namespace ImprovedPublicTransport2.Query
+namespace ImprovedPublicTransport.Query
 {
     public static class ActiveVehiclesQuery
     {
@@ -42,6 +42,7 @@ namespace ImprovedPublicTransport2.Query
                     continue;
                 }
                 var info = Singleton<VehicleManager>.instance.m_vehicles.m_buffer[vehicle].Info;
+                if (info == null) continue;
                 foreach (var data in prefabs)
                 {
                     if (info.name != data.Name)

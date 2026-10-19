@@ -1,6 +1,6 @@
 using ColossalFramework;
 
-namespace ImprovedPublicTransport2.Query
+namespace ImprovedPublicTransport.Query
 {
     public static class WorldInfoCurrentLineIDQuery
     {

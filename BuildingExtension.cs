@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using ICities;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Util;
 
-namespace ImprovedPublicTransport2
+namespace ImprovedPublicTransport
 {
     public class BuildingExtension : BuildingExtensionBase
     {

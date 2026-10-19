@@ -4,11 +4,11 @@
 // </copyright>
 
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.UI.AlgernonCommons;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.UI.AlgernonCommons;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
     /// <summary>
     /// UIList row item for vehicle prefabs.

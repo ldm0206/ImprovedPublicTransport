@@ -1,4 +1,4 @@
-namespace ImprovedPublicTransport2.HarmonyPatches
+namespace ImprovedPublicTransport.HarmonyPatches
 {
     public static class HarmonyId
     {

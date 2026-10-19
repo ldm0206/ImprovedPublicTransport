@@ -9,7 +9,7 @@ using System.Collections.Generic;
 using ColossalFramework.UI;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI.DontCryJustDieCommons
+namespace ImprovedPublicTransport.UI.DontCryJustDieCommons
 {
   public class DropDown : UIPanel
   {

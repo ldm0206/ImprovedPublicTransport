@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel;
 
-namespace ImprovedPublicTransport2.Settings
+namespace ImprovedPublicTransport.Settings
 {
     public enum VehicleEditorPositions
     {

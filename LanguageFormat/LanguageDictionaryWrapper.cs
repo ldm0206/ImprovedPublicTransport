@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
-using ImprovedPublicTransport2.TranslationFramework;
+using ImprovedPublicTransport.TranslationFramework;
 
-namespace ImprovedPublicTransport2.LanguageFormat
+namespace ImprovedPublicTransport.LanguageFormat
 {
     public class LanguageDictionaryWrapper : ILanguage
     {

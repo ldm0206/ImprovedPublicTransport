@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace ImprovedPublicTransport2.TranslationFramework
+namespace ImprovedPublicTransport.TranslationFramework
 {
     /// <summary>
     /// Translates the specified field into the value denoted by the identifier

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace ImprovedPublicTransport2.TranslationFramework
+namespace ImprovedPublicTransport.TranslationFramework
 {
     public interface ILanguage
     {

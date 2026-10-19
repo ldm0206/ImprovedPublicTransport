@@ -1,10 +1,10 @@
 using ColossalFramework;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.PublicTransportWorldInfoPanelPatches
+namespace ImprovedPublicTransport.HarmonyPatches.PublicTransportWorldInfoPanelPatches
 {
     public static class RefreshVehicleButtonsPatch
     {

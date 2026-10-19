@@ -1,7 +1,7 @@
-﻿using ImprovedPublicTransport2.LanguageFormat;
-using ImprovedPublicTransport2.TranslationFramework;
+﻿using ImprovedPublicTransport.LanguageFormat;
+using ImprovedPublicTransport.TranslationFramework;
 
-namespace ImprovedPublicTransport2
+namespace ImprovedPublicTransport
 {
     public static class Localization
     {
@@ -10,11 +10,39 @@ namespace ImprovedPublicTransport2
 
         public static string Get(string translationId)
         {
-            if (translationId.StartsWith("INFO_PUBLICTRANSPORT"))
+                // First try the mod's localization manager (most reliable for mod keys)
+            try
             {
-                return ColossalFramework.Globalization.Locale.Get(translationId);
+                LocalizationManager.EnsureFallbackLanguageLoaded();
+                var translated = LocalizationManager.GetTranslation(translationId);
+                if (translated != translationId)
+                    return translated;
             }
-            return LocalizationManager.GetTranslation(translationId);
+            catch { }
+
+            // Then try Colossal's built-in locale
+            try
+            {
+                var c = ColossalFramework.Globalization.Locale.Get(translationId);
+                if (c != translationId)
+                    return c;
+            }
+            catch { }
+
+            // Last-resort: try reading directly from Locale/en.txt
+            try
+            {
+                var fileTranslated = LocalizationManager.TryGetTranslationFromLocaleFile(translationId);
+                if (!string.IsNullOrEmpty(fileTranslated))
+                {
+                    ImprovedPublicTransport.Util.Utils.LogWarning($"Loaded fallback translation for '{translationId}' from en.txt");
+                    return fileTranslated;
+                }
+            }
+            catch { }
+
+            ImprovedPublicTransport.Util.Utils.LogWarning($"Missing translation for '{translationId}'");
+            return translationId;
         }
     }
 }

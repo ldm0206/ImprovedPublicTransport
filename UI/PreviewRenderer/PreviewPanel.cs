@@ -7,7 +7,7 @@ using ColossalFramework;
 using ColossalFramework.UI;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI.PreviewRenderer
+namespace ImprovedPublicTransport.UI.PreviewRenderer
 {
     /// <summary>
     /// Panel that contains the building preview image.

@@ -1,10 +1,10 @@
 using System;
 using HarmonyLib;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.XYZVehicleAIPatches
+namespace ImprovedPublicTransport.HarmonyPatches.XYZVehicleAIPatches
 {
     public class LoadPassengersPatch
     {
@@ -42,7 +42,7 @@ namespace ImprovedPublicTransport2.HarmonyPatches.XYZVehicleAIPatches
             var data = VehicleManager.instance.m_vehicles.m_buffer[vehicleID];
             if (data.m_leadingVehicle != 0)
             {
-                __state = new State();
+                __state = new State { vehicleID = 0 };  // Mark as trailer with 0
                 return true;
             }
 
@@ -57,6 +57,12 @@ namespace ImprovedPublicTransport2.HarmonyPatches.XYZVehicleAIPatches
 
         public static void LoadPassengersPost(State __state)
         {
+            // Skip if this was a trailer (vehicleID == 0 from pre-function's marker)
+            if (__state.vehicleID == 0)
+            {
+                return;
+            }
+
             var data = VehicleManager.instance.m_vehicles.m_buffer[__state.vehicleID];
             if (data.m_leadingVehicle != 0)
             {

@@ -7,7 +7,7 @@ using System;
 using ColossalFramework.UI;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI.AlgernonCommons
+namespace ImprovedPublicTransport.UI.AlgernonCommons
 {
     /// <summary>
     /// Based on SamSamT's original work as implemented in boformer's Building Themes mod and AJD3's Ploppable RICO.

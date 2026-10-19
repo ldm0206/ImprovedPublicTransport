@@ -8,9 +8,9 @@ using ColossalFramework;
 using ColossalFramework.Globalization;
 using System;
 using System.Collections.Generic;
-using Utils = ImprovedPublicTransport2.Util.Utils;
+using Utils = ImprovedPublicTransport.Util.Utils;
 
-namespace ImprovedPublicTransport2
+namespace ImprovedPublicTransport
 {
   public static class LocaleModifier
   {

@@ -6,17 +6,20 @@ using System.Reflection.Emit;
 using System.Runtime.CompilerServices;
 using ColossalFramework;
 using HarmonyLib;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
-using static ImprovedPublicTransport2.ImprovedPublicTransportMod;
+using static ImprovedPublicTransport.ImprovedPublicTransportMod;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.TransportLinePatches
+namespace ImprovedPublicTransport.HarmonyPatches.TransportLinePatches
 {
     public class SimulationStepPatch
     {
         public static void Apply()
         {
+            ImprovedPublicTransport.Util.Utils.Log($"{ShortModName}: +++ SimulationStepPatch: check existing patches for TransportLine.SimulationStep");
+            PatchUtil.LogExistingPatches(typeof(TransportLine).GetMethod(nameof(TransportLine.SimulationStep), System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.NonPublic));
+
             PatchUtil.Patch(
                 new PatchUtil.MethodDefinition(typeof(TransportLine), nameof(TransportLine.SimulationStep)),
                 new PatchUtil.MethodDefinition(typeof(SimulationStepPatch), nameof(Prefix), priority: Priority.Normal),
@@ -41,6 +44,17 @@ namespace ImprovedPublicTransport2.HarmonyPatches.TransportLinePatches
             var newCodes = new List<CodeInstruction>();
             foreach (var codeInstruction in codes)
             {
+                // Fares must affect revenue only, never ridership. The game derives the line's
+                // "pull" (how many citizens pick that line) from the ticket price; feed it 0.
+                if (codeInstruction.opcode == OpCodes.Ldfld &&
+                    codeInstruction.operand is FieldInfo fareField &&
+                    fareField.DeclaringType == typeof(TransportLine) &&
+                    fareField.Name == nameof(TransportLine.m_ticketPrice))
+                {
+                    newCodes.Add(new CodeInstruction(OpCodes.Ldc_I4_0) { labels = codeInstruction.labels });
+                    continue;
+                }
+
                 if (SkipInstruction(codeInstruction))
                 {
                     newCodes.Add(codeInstruction);
@@ -101,22 +115,25 @@ namespace ImprovedPublicTransport2.HarmonyPatches.TransportLinePatches
                 stop1 = TransportLine.GetNextStop(stop1);
             } while (stops1 != stop1 && stop1 != 0);
 
-            var itemClass = TransportManager.instance.m_lines.m_buffer[__state].Info.m_class;
-            var prefabs =
-                VehiclePrefabs.instance.GetPrefabs(itemClass.m_service, itemClass.m_subService, itemClass.m_level);
             var amount = 0;
-            TransportLineUtil.CountLineActiveVehicles(__state, out _, (num3) =>
+            var activeVehicles = TransportLineUtil.CountLineActiveVehicles(__state, out _, (num3) =>
             {
-                var prefabData = Array.Find(prefabs,
-                    item => item.PrefabDataIndex ==
-                            VehicleManager.instance.m_vehicles.m_buffer[num3].Info.m_prefabDataIndex);
+                var vInfo = VehicleManager.instance.m_vehicles.m_buffer[num3].Info;
+                if (vInfo == null) return;
+                var prefabData = VehiclePrefabs.instance.FindByIndex(vInfo.m_prefabDataIndex);
                 if (prefabData == null) return;
                 amount += prefabData.MaintenanceCost;
                 CachedVehicleData.m_cachedVehicleData[num3].StartNewWeek(prefabData.MaintenanceCost);
             });
             if (amount != 0)
+            {
+                var line = TransportManager.instance.m_lines.m_buffer[__state];
+                var lineName = TransportManager.instance.GetLineName(__state);
+                ImprovedPublicTransport.Util.Utils.Log($"SimulationStepPatch: line {__state} ({lineName}) maintenance cost {amount}, activeVehicles={activeVehicles}");
+
                 Singleton<EconomyManager>.instance.FetchResource(EconomyManager.Resource.Maintenance, amount,
-                    TransportManager.instance.m_lines.m_buffer[__state].Info.m_class);
+                    line.Info.m_class);
+            }
         }
 
         public static int CalculateTargetVehicleCount(ushort lineID)

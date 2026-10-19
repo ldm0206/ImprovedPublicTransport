@@ -3,7 +3,9 @@
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
-namespace ImprovedPublicTransport2.UI.AlgernonCommons
+using AlgernonCommons.Notifications;
+
+namespace ImprovedPublicTransport.UI.AlgernonCommons
 {
     /// <summary>
     /// Base mod class, with settings file and optional what's new notifications.
@@ -38,6 +40,11 @@ namespace ImprovedPublicTransport2.UI.AlgernonCommons
         /// Gets the mod's name for logging purposes.
         /// </summary>
         public virtual string LogName => BaseName;
+
+        /// <summary>
+        /// Gets any "what's new" messages for this mod (newest first).
+        /// </summary>
+        public virtual WhatsNewMessage[] WhatsNewMessages => null;
 
         /// <summary>
         /// Called by the game when the mod is enabled.

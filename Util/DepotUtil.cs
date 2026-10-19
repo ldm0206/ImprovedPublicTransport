@@ -1,10 +1,10 @@
 ﻿using ColossalFramework;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.ReverseDetours;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.ReverseDetours;
 using UnityEngine;
-using static ImprovedPublicTransport2.ImprovedPublicTransportMod;
+using static ImprovedPublicTransport.ImprovedPublicTransportMod;
 
-namespace ImprovedPublicTransport2.Util
+namespace ImprovedPublicTransport.Util
 {
     
     public static class DepotUtil

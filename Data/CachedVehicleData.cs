@@ -5,9 +5,9 @@
 // Assembly location: C:\Games\Steam\steamapps\workshop\content\255710\424106600\ImprovedPublicTransport.dll
 
 using System;
-using Utils = ImprovedPublicTransport2.Util.Utils;
+using Utils = ImprovedPublicTransport.Util.Utils;
 
-namespace ImprovedPublicTransport2.Data
+namespace ImprovedPublicTransport.Data
 {
 
   public static class CachedVehicleData

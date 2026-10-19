@@ -3,9 +3,9 @@
 // Licensed under the MIT license. See LICENSE.txt file in the project root for full license information.
 // </copyright>
 
-using ImprovedPublicTransport2.UI.AlgernonCommons;
+using ImprovedPublicTransport.UI.AlgernonCommons;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
     using System;
     using ColossalFramework;
@@ -56,12 +56,13 @@ namespace ImprovedPublicTransport2.UI
         // Current selections.
         private ushort _currentLineID;
         private TransportLine _thisLine;
-        private byte _currentDistrict;
-        private byte _currentPark;
+        private byte _currentDistrict = 0;
+        private byte _currentPark = 0;
 
         // Event handling.
-        private bool _copyProcessing = false;
-        private bool _pasteProcessing = false;
+        // Copy/paste process flags are optional and not currently required.
+        // private bool _copyProcessing = false;
+        // private bool _pasteProcessing = false;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="PrefabPanel"/> class.
@@ -114,11 +115,11 @@ namespace ImprovedPublicTransport2.UI
 
                 // Copy/paste buttons.
                 _copyButton = UIButtons.AddIconButton(this, CopyButtonX, IconButtonY, IconButtonSize,
-                    UITextures.LoadQuadSpriteAtlas("IPT2-Copy"), Localization.Get("COPY_TIP"));
+                    UITextures.LoadQuadSpriteAtlas("IPT-Copy"), Localization.Get("COPY_TIP"));
                 _copyButton.Hide(); //TODO: restore
                 _copyButton.eventClicked += (c, p) => CopyPaste.Instance.Copy(_currentLineID);
                 _pasteButton = UIButtons.AddIconButton(this, PasteButtonX, IconButtonY, IconButtonSize,
-                    UITextures.LoadQuadSpriteAtlas("IPT2-Paste"), Localization.Get("PASTE_TIP"));
+                    UITextures.LoadQuadSpriteAtlas("IPT-Paste"), Localization.Get("PASTE_TIP"));
                 _pasteButton.Hide(); //TODO: restore
                 _pasteButton.eventClicked += (c, p) => Paste();
 
@@ -128,7 +129,7 @@ namespace ImprovedPublicTransport2.UI
                     CopyBuildingButtonX,
                     IconButtonY,
                     IconButtonSize,
-                    UITextures.LoadQuadSpriteAtlas("IPT2-CopyBuilding"),
+                    UITextures.LoadQuadSpriteAtlas("IPT-CopyBuilding"),
                     Localization.Get("COPY_BUILDING_TIP"));
                 _copyBuildingButton.eventClicked += (c, p) => CopyPaste.Instance.CopyToBuildings(_currentLineID, 0, 0);
                 _copyBuildingButton.Hide(); //TODO: restore
@@ -137,7 +138,7 @@ namespace ImprovedPublicTransport2.UI
                     CopyDistrictButtonX,
                     IconButtonY,
                     IconButtonSize,
-                    UITextures.LoadQuadSpriteAtlas("IPT2-CopyDistrict"),
+                    UITextures.LoadQuadSpriteAtlas("IPT-CopyDistrict"),
                     Localization.Get("COPY_DISTRICT_TIP"));
                 _copyDistrictButton.eventClicked += (c, p) =>
                     CopyPaste.Instance.CopyToBuildings(_currentLineID, _currentDistrict, _currentPark);

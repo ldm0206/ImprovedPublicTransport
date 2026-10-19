@@ -1,6 +1,6 @@
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Util;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.DepotAIPatches
+namespace ImprovedPublicTransport.HarmonyPatches.DepotAIPatches
 {
     public static class ClassMatchesPatch
     {

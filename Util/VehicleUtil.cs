@@ -2,9 +2,9 @@
 using System.Text;
 using ColossalFramework;
 using ColossalFramework.Globalization;
-using ImprovedPublicTransport2.OptionsFramework;
+using ImprovedPublicTransport.OptionsFramework;
 
-namespace ImprovedPublicTransport2.Util
+namespace ImprovedPublicTransport.Util
 {
     internal static class VehicleUtil
     {

@@ -1,10 +1,10 @@
-using ImprovedPublicTransport2.OptionsFramework;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.OptionsFramework;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
-using static ImprovedPublicTransport2.ImprovedPublicTransportMod;
+using static ImprovedPublicTransport.ImprovedPublicTransportMod;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.DepotAIPatches
+namespace ImprovedPublicTransport.HarmonyPatches.DepotAIPatches
 {
     public class StartTransferPatch
     {
@@ -74,6 +74,14 @@ namespace ImprovedPublicTransport2.HarmonyPatches.DepotAIPatches
             }
             else
             {
+                // Validate target depot before redirecting to prevent infinite loops
+                if (depot == 0 || BuildingManager.instance.m_buildings.m_buffer[depot].Info == null)
+                {
+                    Debug.LogWarning($"{ShortModName}: Invalid target depot {depot} for redirect from {buildingID}. Aborting redirect.");
+                    CachedTransportLineData.ClearEnqueuedVehicles(lineID);
+                    return false;
+                }
+
                 Debug.Log($"{ShortModName}: Redirecting from {buildingID} to {depot}");
                 __instance.StartTransfer(depot, ref BuildingManager.instance.m_buildings.m_buffer[depot], reason,
                     offer);

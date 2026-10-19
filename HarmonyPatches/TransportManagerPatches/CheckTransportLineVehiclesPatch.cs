@@ -1,7 +1,7 @@
 using System.Runtime.CompilerServices;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Util;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.TransportManagerPatches
+namespace ImprovedPublicTransport.HarmonyPatches.TransportManagerPatches
 {
     public static class CheckTransportLineVehiclesPatch
     {

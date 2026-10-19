@@ -1,7 +1,7 @@
 ﻿using System.IO;
 using System.Xml.Serialization;
 
-namespace ImprovedPublicTransport2.TranslationFramework
+namespace ImprovedPublicTransport.TranslationFramework
 {
     public class DefaultLanguageDeserializer : ILanguageDeserializer
     {

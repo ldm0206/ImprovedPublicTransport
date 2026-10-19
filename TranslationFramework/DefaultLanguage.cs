@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace ImprovedPublicTransport2.TranslationFramework
+namespace ImprovedPublicTransport.TranslationFramework
 {
     [XmlRoot(ElementName = "Language", Namespace = "", IsNullable = false)]
     public class DefaultLanguage : ILanguage

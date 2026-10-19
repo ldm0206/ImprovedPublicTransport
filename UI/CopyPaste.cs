@@ -5,10 +5,10 @@
 
 using System.Collections.Generic;
 using ColossalFramework;
-using ImprovedPublicTransport2.UI.AlgernonCommons;
+using ImprovedPublicTransport.UI.AlgernonCommons;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
     /// <summary>
     /// Handles copying and pasting of building settings.
@@ -22,8 +22,7 @@ namespace ImprovedPublicTransport2.UI
         private readonly List<VehicleInfo> _copyBuffer = new List<VehicleInfo>();
 
         // Copy metadata.
-        private bool _isCopied = false;
-        private int _bufferSize;
+        // Copy state metadata is currently not used in this implementation.
 
         /// <summary>
         /// Gets the active instance.

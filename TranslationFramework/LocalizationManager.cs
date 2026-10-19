@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using ColossalFramework.Globalization;
 
-namespace ImprovedPublicTransport2.TranslationFramework
+namespace ImprovedPublicTransport.TranslationFramework
 {
     /// <summary>
     /// Handles localisation for a mod.
@@ -61,13 +61,40 @@ namespace ImprovedPublicTransport2.TranslationFramework
 
             string basePath = Util.AssemblyPath(modType);
 
+            // Only log debug info if verbose logging enabled
+            bool verboseLogging = ImprovedPublicTransport.Util.Diagnostics.VerboseTranspileLogs;
+            if (verboseLogging)
+            {
+                try
+                {
+                    ImprovedPublicTransport.Util.Utils.LogWarning($"LocalizationManager: basePath='{basePath}'");
+                }
+                catch { }
+            }
+
             if (basePath != "")
             {
-                string languagePath = basePath + System.IO.Path.DirectorySeparatorChar + "Locale";
+                string languagePath = basePath + System.IO.Path.DirectorySeparatorChar + "Translations";
+                if (verboseLogging)
+                {
+                    try
+                    {
+                        ImprovedPublicTransport.Util.Utils.LogWarning($"LocalizationManager: languagePath='{languagePath}' Exists={System.IO.Directory.Exists(languagePath)}");
+                    }
+                    catch { }
+                }
 
                 if (Directory.Exists(languagePath))
                 {
-                    string[] languageFiles = Directory.GetFiles(languagePath);
+                    string[] languageFiles = Directory.GetFiles(languagePath, "*.txt", SearchOption.AllDirectories);
+                    if (verboseLogging)
+                    {
+                        try
+                        {
+                            ImprovedPublicTransport.Util.Utils.LogWarning($"LocalizationManager: found {languageFiles.Length} language files");
+                        }
+                        catch { }
+                    }
 
                     foreach (string languageFile in languageFiles)
                     {
@@ -75,6 +102,10 @@ namespace ImprovedPublicTransport2.TranslationFramework
                         try
                         {
                             loadedLanguage = languageDeserializer.DeserialiseLanguage(languageFile);
+                            if (verboseLogging)
+                            {
+                                ImprovedPublicTransport.Util.Utils.LogWarning($"LocalizationManager: Loading localization file: {languageFile}. Detected locale name: {loadedLanguage?.LocaleName()}");
+                            }
                         }
                         catch (Exception e)
                         {
@@ -87,11 +118,41 @@ namespace ImprovedPublicTransport2.TranslationFramework
                             _languages.Add(loadedLanguage);
                         }
                     }
+
+                    if (verboseLogging)
+                    {
+                        try
+                        {
+                            ImprovedPublicTransport.Util.Utils.LogWarning($"LocalizationManager: loaded {_languages.Count} languages");
+                        }
+                        catch { }
+                    }
                 }
                 else
                 {
                     UnityEngine.Debug.LogWarning("Can't load any localisation files");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Ensure that a fallback language is available and selected if no current language has been set yet.
+        /// This is useful when localization is requested early in the UI lifecycle before Colossal's LocaleManager
+        /// has become available; it forces the manager to load language files and select the fallback (usually 'en').
+        /// </summary>
+        public void EnsureFallbackLanguageLoaded()
+        {
+            // Only load once - _languagesLoaded flag prevents repeated reloads
+            if (!_languagesLoaded)
+            {
+                LoadLanguages();
+            }
+
+            // If no current language has been selected yet, choose the fallback language if present,
+            // otherwise pick the first available language.
+            if (_currentLanguage == null && _languages != null && _languages.Count > 0)
+            {
+                _currentLanguage = _languages.Find(l => l.LocaleName() == fallbackLanguage) ?? _languages[0];
             }
         }
         
@@ -145,6 +206,42 @@ namespace ImprovedPublicTransport2.TranslationFramework
             }
 
             return translatedText;
+        }
+
+        /// <summary>
+        /// Try to read a translation directly from a Locale file (e.g., Locale/en.txt).
+        /// This is a last-resort fallback for cases where the language manager hasn't
+        /// selected a language or parsing failed earlier.
+        /// </summary>
+        public string TryGetTranslationFromLocaleFile(string translationId)
+        {
+            try
+            {
+                string basePath = Util.AssemblyPath(modType);
+                if (string.IsNullOrEmpty(basePath)) return null;
+                string enPath = System.IO.Path.Combine(basePath, "Translations");
+                enPath = System.IO.Path.Combine(enPath, "en.txt");
+                if (!System.IO.File.Exists(enPath)) return null;
+                foreach (string raw in System.IO.File.ReadAllLines(enPath))
+                {
+                    if (raw == null) continue;
+                    var str = raw.Trim();
+                    if (str.Length == 0) continue;
+                    int idx = str.IndexOf(' ');
+                    if (idx <= 0) continue;
+                    var key = str.Substring(0, idx);
+                    if (key == translationId)
+                    {
+                        var val = str.Substring(idx + 1).Replace("\\n", "\n");
+                        return val;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                UnityEngine.Debug.LogWarning("LocalizationManager: fallback read failed: " + e.Message);
+            }
+            return null;
         }
     }
 }

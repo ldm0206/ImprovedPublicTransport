@@ -5,10 +5,10 @@
 
 using System;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.UI.AlgernonCommons;
+using ImprovedPublicTransport.UI.AlgernonCommons;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
     /// <summary>
     /// Static class to manage the mod's building info panel.
@@ -20,7 +20,7 @@ namespace ImprovedPublicTransport2.UI
         private static PrefabPanel s_panel;
 
         // InfoPanel buttons.
-        private static UIButton s_transportLineButton;
+        // This button is not used by IPT3 integration.
 
         /// <summary>
         /// Gets the active panel instance.

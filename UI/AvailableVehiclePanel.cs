@@ -8,12 +8,12 @@ using System.Collections.Generic;
 using System.Linq;
 using ColossalFramework;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Query;
-using ImprovedPublicTransport2.UI.AlgernonCommons;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Query;
+using ImprovedPublicTransport.UI.AlgernonCommons;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
     /// <summary>
     /// Vehicle selection panel main class.

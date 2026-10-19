@@ -5,13 +5,13 @@
 
 using System.Collections.Generic;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.UI.AlgernonCommons;
-using ImprovedPublicTransport2.UI.PreviewRenderer;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.UI.AlgernonCommons;
+using ImprovedPublicTransport.UI.PreviewRenderer;
 using JetBrains.Annotations;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
     /// <summary>
     /// Warehouse vehicle controls.
@@ -90,7 +90,7 @@ namespace ImprovedPublicTransport2.UI
                 RightColumnX - ArrowSize - Margin,
                 VehicleListY,
                 ArrowSize,
-                UITextures.LoadQuadSpriteAtlas("IPT2-Add"),
+                UITextures.LoadQuadSpriteAtlas("IPT-Add"),
                 Localization.Get("VEHICLE_SELECTION_ADD_VEHICLE"));
             _addButton.isEnabled = false;
             _addButton.eventClicked += (c, p) => AddVehicle(_selectedAvailableVehicle);
@@ -101,7 +101,7 @@ namespace ImprovedPublicTransport2.UI
                 RightColumnX - ArrowSize - Margin - ArrowSize - Margin,
                 VehicleListY,
                 ArrowSize,
-                UITextures.LoadQuadSpriteAtlas("IPT2-AddAll"),
+                UITextures.LoadQuadSpriteAtlas("IPT-AddAll"),
                 Localization.Get("VEHICLE_SELECTION_ADD_ALL"));
             _addAllButton.isEnabled = false;
             _addAllButton.eventClicked += (c, p) => AddAllVehicles();
@@ -112,7 +112,7 @@ namespace ImprovedPublicTransport2.UI
                 MidControlX,
                 VehicleListY,
                 ArrowSize,
-                UITextures.LoadQuadSpriteAtlas("IPT2-Remove"),
+                UITextures.LoadQuadSpriteAtlas("IPT-Remove"),
                 Localization.Get("VEHICLE_SELECTION_REMOVE_VEHICLE"));
             _removeButton.isEnabled = false;
             _removeButton.eventClicked += (c, p) => RemoveVehicle();
@@ -123,7 +123,7 @@ namespace ImprovedPublicTransport2.UI
                 MidControlX + ArrowSize + Margin,
                 VehicleListY,
                 ArrowSize,
-                UITextures.LoadQuadSpriteAtlas("IPT2-RemoveAll"),
+                UITextures.LoadQuadSpriteAtlas("IPT-RemoveAll"),
                 Localization.Get("VEHICLE_SELECTION_REMOVE_ALL"));
             _removeAllButton.isEnabled = false;
             _removeAllButton.eventClicked += (c, p) => RemoveAllVehicles();

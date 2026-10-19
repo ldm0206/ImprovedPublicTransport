@@ -6,7 +6,7 @@
 using ColossalFramework.UI;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI.AlgernonCommons
+namespace ImprovedPublicTransport.UI.AlgernonCommons
 {
     /// <summary>
     /// UI dropdown menus.
@@ -140,7 +140,7 @@ namespace ImprovedPublicTransport2.UI.AlgernonCommons
         /// <returns>New dropdown menu using game's option panel template.</returns>
         public static UIDropDown AddPlainDropDown(UIComponent parent, float xPos, float yPos, string text, string[] items, int selectedIndex = 0, float width = 270f)
         {
-            UIPanel panel = parent.AttachUIComponent(UITemplateManager.GetAsGameObject("IPT2_OptionsDropdownTemplate")) as UIPanel;
+            UIPanel panel = parent.AttachUIComponent(UITemplateManager.GetAsGameObject("IPT3_OptionsDropdownTemplate")) as UIPanel;
             UIDropDown dropDown = panel.Find<UIDropDown>("Dropdown");
 
             // Set text.

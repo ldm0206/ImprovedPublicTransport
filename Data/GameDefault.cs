@@ -1,4 +1,4 @@
-﻿namespace ImprovedPublicTransport2.Data
+﻿namespace ImprovedPublicTransport.Data
 {
     public static class GameDefault
     {

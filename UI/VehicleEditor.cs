@@ -6,18 +6,19 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.Globalization;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.OptionsFramework;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.UI.DontCryJustDieCommons;
+using ImprovedPublicTransport.OptionsFramework;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.UI.DontCryJustDieCommons;
 using UnityEngine;
-using UIUtils = ImprovedPublicTransport2.Util.UIUtils;
-using Utils = ImprovedPublicTransport2.Util.Utils;
+using UIUtils = ImprovedPublicTransport.Util.UIUtils;
+using Utils = ImprovedPublicTransport.Util.Utils;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
   public class VehicleEditor : UIPanel
   {
@@ -345,7 +346,8 @@ namespace ImprovedPublicTransport2.UI
       uiTextField1.width = (float) num25;
       double num26 = 22.0;
       uiTextField1.height = (float) num26;
-      int num27 = 4;
+      // No artificial capacity cap: allow any value the game can hold.
+      int num27 = 9;
       uiTextField1.maxLength = num27;
       int num28 = 1;
       uiTextField1.numericalOnly = num28 != 0;
@@ -596,7 +598,7 @@ namespace ImprovedPublicTransport2.UI
       UITextField uiTextField = this._rightSidePanel.Find<UITextField>("MaintenanceCost");
       if (!uiTextField.parent.enabled)
         return;
-      float num2 = (float) num1 / (float) carCount / (float) GameDefault.GetCapacity(prefab.Info.GetService(), prefab.Info.GetSubService(), prefab.Info.GetClassLevel(), prefab.Info.m_vehicleType);
+      float num2 = (float) num1 / (float) carCount / (float) PrefabData.GetCapacity(prefab.Info.GetService(), prefab.Info.GetSubService(), prefab.Info.GetClassLevel(), prefab.Info.m_vehicleAI);
       uiTextField.text = Mathf.RoundToInt((float) (PrefabData.GetMaintenanceCost(prefab.Info.GetService(), prefab.Info.GetSubService(), prefab.Info.GetClassLevel(), prefab.Info.m_vehicleAI) * 16) * num2).ToString();
     }
 
@@ -627,13 +629,16 @@ namespace ImprovedPublicTransport2.UI
 
       private PrefabData[] GetPrefabs()
       {
-
         var prefabs = new List<PrefabData>();
         if (_selectedService == ItemClass.Service.PublicTransport &&
             _selectedSubService == ItemClass.SubService.PublicTransportBus)
         {
+          // Add sightseeing buses (PublicTransportTours)
           prefabs.AddRange(VehiclePrefabs.instance.GetPrefabs(this._selectedService, ItemClass.SubService.PublicTransportTours));
-        } //we also want to display sightseeing buses in the bus dropdown
+          
+          // Intercity buses are included below as part of PublicTransportBus
+        }
+        // Get all buses (including regular, intercity, etc.) from the selected subservice
         prefabs.AddRange(VehiclePrefabs.instance.GetPrefabs(this._selectedService, this._selectedSubService));
         return prefabs.ToArray();
       }
@@ -718,7 +723,8 @@ namespace ImprovedPublicTransport2.UI
           {
               new ItemClassTriplet(ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportBus, ItemClass.Level.Level1),
               new ItemClassTriplet(ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportBus, ItemClass.Level.Level2),
-              new ItemClassTriplet(ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportTours, ItemClass.Level.Level3)
+              new ItemClassTriplet(ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportBus, ItemClass.Level.Level3), // Intercity Buses
+              new ItemClassTriplet(ItemClass.Service.PublicTransport, ItemClass.SubService.PublicTransportTours, ItemClass.Level.Level3)  // Sightseeing Buses
           };
         case TransportInfo.TransportType.EvacuationBus:
               return new[] { new ItemClassTriplet(ItemClass.Service.Disaster, ItemClass.SubService.None, ItemClass.Level.Level4) };

@@ -1,8 +1,8 @@
 using HarmonyLib;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.TransportLinePatches
+namespace ImprovedPublicTransport.HarmonyPatches.TransportLinePatches
 {
     public class GetLineVehiclePatch
     {

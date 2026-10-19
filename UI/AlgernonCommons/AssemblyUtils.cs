@@ -9,7 +9,7 @@ using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.Plugins;
 
-namespace ImprovedPublicTransport2.UI.AlgernonCommons
+namespace ImprovedPublicTransport.UI.AlgernonCommons
 {
     using static ColossalFramework.Plugins.PluginManager;
 

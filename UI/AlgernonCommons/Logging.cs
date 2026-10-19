@@ -7,7 +7,7 @@ using System;
 using System.Text;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI.AlgernonCommons
+namespace ImprovedPublicTransport.UI.AlgernonCommons
 {
     /// <summary>
     /// Logging utility class.
@@ -57,8 +57,9 @@ namespace ImprovedPublicTransport2.UI.AlgernonCommons
                 // Check for cached reference.
                 if (s_modName == null)
                 {
-                    // No cached reference - if ModBase defines a name, use that, otherwise fall back to the assembly name.
-                    s_modName = ModBase.Instance?.LogName ?? AssemblyUtils.Name;
+                    // Try local ModBase first, then fall back to real AlgernonCommons.ModBase
+                    var modBase = ModBase.Instance ?? AlgernonCommons.ModBase.Instance;
+                    s_modName = modBase?.LogName ?? AssemblyUtils.Name;
                 }
 
                 return s_modName;

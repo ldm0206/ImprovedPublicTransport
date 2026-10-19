@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
-using ImprovedPublicTransport2.TranslationFramework;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.TranslationFramework;
+using ImprovedPublicTransport.Util;
 
-namespace ImprovedPublicTransport2.LanguageFormat
+namespace ImprovedPublicTransport.LanguageFormat
 {
     public class PlainTextLanguageDeserializer : ILanguageDeserializer
     {

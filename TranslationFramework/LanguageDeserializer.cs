@@ -1,6 +1,6 @@
 ﻿using System.IO;
 
-namespace ImprovedPublicTransport2.TranslationFramework
+namespace ImprovedPublicTransport.TranslationFramework
 {
     public interface ILanguageDeserializer
     {

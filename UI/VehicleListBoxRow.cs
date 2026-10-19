@@ -9,12 +9,12 @@ using System.Text;
 using ColossalFramework;
 using ColossalFramework.Globalization;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.OptionsFramework;
-using ImprovedPublicTransport2.Data;
+using ImprovedPublicTransport.OptionsFramework;
+using ImprovedPublicTransport.Data;
 using UnityEngine;
-using Utils = ImprovedPublicTransport2.Util.Utils;
+using Utils = ImprovedPublicTransport.Util.Utils;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
   public class VehicleListBoxRow : UIPanel
   {

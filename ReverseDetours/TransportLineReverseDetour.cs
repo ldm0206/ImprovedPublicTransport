@@ -1,7 +1,7 @@
 ﻿using System.Runtime.CompilerServices;
-using ImprovedPublicTransport2.RedirectionFramework.Attributes;
+using ImprovedPublicTransport.RedirectionFramework.Attributes;
 
-namespace ImprovedPublicTransport2.ReverseDetours
+namespace ImprovedPublicTransport.ReverseDetours
 {
     //TODO: Only to access the private method. use a reversed patch instead
     [TargetType(typeof(TransportLine))]

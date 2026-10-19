@@ -1,10 +1,10 @@
 ﻿using ColossalFramework;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.UI;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.UI;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.PublicTransportStopButtonPatches
+namespace ImprovedPublicTransport.HarmonyPatches.PublicTransportStopButtonPatches
 {
     public class OnMouseDownPatch
     {

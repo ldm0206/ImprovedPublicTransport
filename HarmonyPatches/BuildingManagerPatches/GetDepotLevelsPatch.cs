@@ -1,8 +1,8 @@
 using ColossalFramework;
-using ImprovedPublicTransport2.HarmonyPatches.DepotAIPatches;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.HarmonyPatches.DepotAIPatches;
+using ImprovedPublicTransport.Util;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.BuildingManagerPatches
+namespace ImprovedPublicTransport.HarmonyPatches.BuildingManagerPatches
 {
     public static class GetDepotLevelsPatch
     {

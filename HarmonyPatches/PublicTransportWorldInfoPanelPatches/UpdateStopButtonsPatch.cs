@@ -1,9 +1,9 @@
 ﻿using ColossalFramework;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.UI;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.UI;
+using ImprovedPublicTransport.Util;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.PublicTransportWorldInfoPanelPatches
+namespace ImprovedPublicTransport.HarmonyPatches.PublicTransportWorldInfoPanelPatches
 {
     public static class UpdateStopButtonsPatch
     {

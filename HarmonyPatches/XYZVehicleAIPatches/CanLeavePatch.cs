@@ -4,12 +4,12 @@ using System.Reflection;
 using System.Reflection.Emit;
 using ColossalFramework;
 using HarmonyLib;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
-using static ImprovedPublicTransport2.ImprovedPublicTransportMod;
+using static ImprovedPublicTransport.ImprovedPublicTransportMod;
 
-namespace ImprovedPublicTransport2.HarmonyPatches.XYZVehicleAIPatches
+namespace ImprovedPublicTransport.HarmonyPatches.XYZVehicleAIPatches
 {
     public static class CanLeavePatch
     {

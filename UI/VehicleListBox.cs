@@ -7,10 +7,10 @@
 using System;
 using System.Collections.Generic;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.Data;
+using ImprovedPublicTransport.Data;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI
+namespace ImprovedPublicTransport.UI
 {
   public class VehicleListBox : UIPanel
   {

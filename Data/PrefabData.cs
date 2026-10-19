@@ -1,17 +1,16 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Xml.Serialization;
 using ColossalFramework;
 using ColossalFramework.Globalization;
-using ImprovedPublicTransport2.OptionsFramework;
-using ImprovedPublicTransport2.UI.AlgernonCommons;
+using ImprovedPublicTransport.OptionsFramework;
+using ImprovedPublicTransport.UI.AlgernonCommons;
 using UnityEngine;
 using static System.Int32;
-using Utils = ImprovedPublicTransport2.Util.Utils;
+using Utils = ImprovedPublicTransport.Util.Utils;
 
-namespace ImprovedPublicTransport2.Data
+namespace ImprovedPublicTransport.Data
 {
   public class PrefabData
   {
@@ -21,6 +20,7 @@ namespace ImprovedPublicTransport2.Data
     private DefaultPrefabData Defaults;
     private bool _changeFlag;
     private int _maintenanceCost;
+    private bool _maintenanceCostManuallySet;
 
     public int PrefabDataIndex => Info.m_prefabDataIndex;
 
@@ -36,11 +36,18 @@ namespace ImprovedPublicTransport2.Data
       {
         var totalCapacity = GetCapacity(Info.m_class.m_service, Info.m_class.m_subService,
           Info.m_class.m_level, Info.m_vehicleAI);
-        if (_trailerData != null)
+        // Query Info.m_trailers directly to support dynamic carriage changes (e.g., CarriageNumberSelector)
+        if (Info.m_trailers != null)
         {
-          totalCapacity += _trailerData.Select((t, index) => _trailerData[index].Capacity).Sum();
+          for (int i = 0; i < Info.m_trailers.Length; i++)
+          {
+            if (Info.m_trailers[i].m_info != null)
+              totalCapacity += GetCapacity(Info.m_trailers[i].m_info.m_class.m_service,
+                Info.m_trailers[i].m_info.m_class.m_subService,
+                Info.m_trailers[i].m_info.m_class.m_level,
+                Info.m_trailers[i].m_info.m_vehicleAI);
+          }
         }
-
 
         return totalCapacity;
       }
@@ -75,9 +82,12 @@ namespace ImprovedPublicTransport2.Data
       get
       {
         var num = 1;
-        if (_trailerData != null)
+        // Query Info.m_trailers directly to support dynamic carriage changes (e.g., CarriageNumberSelector)
+        if (Info.m_trailers != null)
         {
-          num += _trailerData.Count(t => t.Info.GetSubService() == Info.GetSubService());
+          var mySubService = Info.GetSubService();
+          for (int i = 0; i < Info.m_trailers.Length; i++)
+            if (Info.m_trailers[i].m_info != null && Info.m_trailers[i].m_info.GetSubService() == mySubService) num++;
         }
         return num;
       }
@@ -113,10 +123,11 @@ namespace ImprovedPublicTransport2.Data
           case ItemClass.SubService.PublicTransportMonorail:
           case ItemClass.SubService.PublicTransportCableCar:
           case ItemClass.SubService.PublicTransportTrolleybus:
-            if (_maintenanceCost == 0)
+            // If manually set by user, use cached value; otherwise recalculate to support dynamic carriage changes
+            if (!_maintenanceCostManuallySet || _maintenanceCost == 0)
             {
-              float num = TotalCapacity / (float) CarCount / GameDefault.GetCapacity(service, subService, level, Info.m_vehicleType);
-              MaintenanceCost = Mathf.RoundToInt(GetMaintenanceCost(service, subService, level, Info.m_vehicleAI) * 16 * num);
+              float num = TotalCapacity / (float) CarCount / (float) GetCapacity(service, subService, level, Info.m_vehicleAI);
+              _maintenanceCost = Mathf.RoundToInt(GetMaintenanceCost(service, subService, level, Info.m_vehicleAI) * 16 * num);
             }
             return _maintenanceCost;
           default:
@@ -131,6 +142,7 @@ namespace ImprovedPublicTransport2.Data
         }
 
         _maintenanceCost = value;
+        _maintenanceCostManuallySet = true;
         _changeFlag = true;
       }
     }
@@ -190,7 +202,6 @@ namespace ImprovedPublicTransport2.Data
     {
       Info = info;
       DisplayName = GetDisplayName(info);
-      Utils.Log("Creating PrefabData for " + Name);
       if (Name == "451494281.London 1992 Stock (4 car)_Data")
       {
         const int length = 3;
@@ -307,9 +318,11 @@ namespace ImprovedPublicTransport2.Data
     public void SetDefaults()
     {
       Capacity = Defaults.Capacity;
-      MaintenanceCost = Defaults.MaintenanceCost;
       MaxSpeed = Defaults.MaxSpeed;
       EngineOnBothEnds = Defaults.EngineOnBothEnds;
+      // Reset maintenance cost to allow recalculation based on current carriage count
+      _maintenanceCost = 0;
+      _maintenanceCostManuallySet = false;
       if (_trailerData != null)
       {
         foreach (var trailer in _trailerData)
@@ -323,7 +336,7 @@ namespace ImprovedPublicTransport2.Data
       _changeFlag = false;
     }
 
-    private static int GetCapacity(ItemClass.Service service, ItemClass.SubService subService, ItemClass.Level level, VehicleAI ai)
+    public static int GetCapacity(ItemClass.Service service, ItemClass.SubService subService, ItemClass.Level level, VehicleAI ai)
     {
       var num = 0;
         switch (service)
@@ -366,6 +379,7 @@ namespace ImprovedPublicTransport2.Data
             {
               num = subService switch
               {
+                ItemClass.SubService.PublicTransportBus when ai is BusAI busAI => busAI.m_passengerCapacity,
                 ItemClass.SubService.PublicTransportTours when ai is BusAI busAI => busAI.m_passengerCapacity,
                 ItemClass.SubService.PublicTransportPlane when ai is PassengerHelicopterAI helicopterAI => helicopterAI.m_passengerCapacity,
                 ItemClass.SubService.PublicTransportPlane when ai is PassengerPlaneAI planeAI => planeAI.m_passengerCapacity,
@@ -382,7 +396,7 @@ namespace ImprovedPublicTransport2.Data
       return num;
     }
 
-    private static void SetCapacity(ItemClass.Service service, ItemClass.SubService subService, ItemClass.Level level, VehicleAI ai, int capacity)
+    public static void SetCapacity(ItemClass.Service service, ItemClass.SubService subService, ItemClass.Level level, VehicleAI ai, int capacity)
     {
       switch (service)
       {
@@ -453,6 +467,9 @@ namespace ImprovedPublicTransport2.Data
           {
             switch (subService)
             {
+              case ItemClass.SubService.PublicTransportBus when ai is BusAI busAI:
+                busAI.m_passengerCapacity = capacity;
+                break;
               case ItemClass.SubService.PublicTransportTours when ai is BusAI busAI:
                 busAI.m_passengerCapacity = capacity;
                 break;
@@ -527,6 +544,7 @@ namespace ImprovedPublicTransport2.Data
             {
               num = subService switch
               {
+                ItemClass.SubService.PublicTransportBus when ai is BusAI busAI => busAI.m_transportInfo?.m_maintenanceCostPerVehicle ?? 0,
                 ItemClass.SubService.PublicTransportTours when ai is BusAI busAI => busAI.m_transportInfo?.m_maintenanceCostPerVehicle ?? 0,
                 ItemClass.SubService.PublicTransportPlane when ai is PassengerHelicopterAI helicopterAI => helicopterAI.m_transportInfo?.m_maintenanceCostPerVehicle ?? 0,
                 ItemClass.SubService.PublicTransportPlane when ai is PassengerPlaneAI planeAI => planeAI.m_transportInfo?.m_maintenanceCostPerVehicle ?? 0,
@@ -554,7 +572,6 @@ namespace ImprovedPublicTransport2.Data
         string path = Path.Combine(str, path2);
         if (!File.Exists(path))
         {
-          Utils.Log("No stored data found for " + Name);
         }
         else
         {

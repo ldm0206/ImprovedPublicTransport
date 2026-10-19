@@ -7,7 +7,7 @@
 using ColossalFramework;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2
+namespace ImprovedPublicTransport
 {
     public class SimHelper : MonoBehaviour
     {

@@ -9,16 +9,16 @@ using System.Reflection;
 using ColossalFramework;
 using ColossalFramework.Globalization;
 using ColossalFramework.UI;
-using ImprovedPublicTransport2.HarmonyPatches.TransportLinePatches;
-using ImprovedPublicTransport2.OptionsFramework;
-using ImprovedPublicTransport2.Query;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.HarmonyPatches.TransportLinePatches;
+using ImprovedPublicTransport.OptionsFramework;
+using ImprovedPublicTransport.Query;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 using UnityEngine;
-using UIUtils = ImprovedPublicTransport2.Util.UIUtils;
-using Utils = ImprovedPublicTransport2.Util.Utils;
+using UIUtils = ImprovedPublicTransport.Util.UIUtils;
+using Utils = ImprovedPublicTransport.Util.Utils;
 
-namespace ImprovedPublicTransport2.UI.PanelExtenders
+namespace ImprovedPublicTransport.UI.PanelExtenders
 {
   public class PanelExtenderVehicle : MonoBehaviour
   {
@@ -65,6 +65,8 @@ namespace ImprovedPublicTransport2.UI.PanelExtenders
         return;
       this._status = this._publicTransportVehicleWorldInfoPanel.Find<UILabel>("Status");
       this._target = this._publicTransportVehicleWorldInfoPanel.Find<UIButton>("Target");
+      // Remove any native click handlers so only ours fires
+      ClearEventClickHandlers(this._target);
       this._target.eventClick += new MouseEventHandler(this.OnTargetClick);
       this._distance = this._publicTransportVehicleWorldInfoPanel.Find<UILabel>("Distance");
       this._distanceTraveled = Utils.GetPrivate<UIProgressBar>((object) this._publicTransportVehicleWorldInfoPanel, "m_DistanceTraveled");
@@ -79,6 +81,18 @@ namespace ImprovedPublicTransport2.UI.PanelExtenders
     private void UpdateBindings()
     {
       var lineId = WorldInfoCurrentLineIDQuery.Query(out var vehicleID);
+      var currentInstanceId = WorldInfoPanel.GetCurrentInstanceID();
+      if (currentInstanceId.Type == InstanceType.Vehicle && currentInstanceId.Vehicle != 0)
+      {
+        ushort selectedVehicle = currentInstanceId.Vehicle;
+        var manager = Singleton<VehicleManager>.instance;
+        var firstVehicle = manager.m_vehicles.m_buffer[selectedVehicle].GetFirstVehicle(selectedVehicle);
+        if (firstVehicle != 0)
+        {
+          vehicleID = firstVehicle;
+        }
+      }
+
       if ((int) lineId == 0)
       {
         this._passengerPanel.Hide();
@@ -90,7 +104,9 @@ namespace ImprovedPublicTransport2.UI.PanelExtenders
       {
         this._publicTransportVehicleWorldInfoPanel.component.height = 377f;
         this._editType.isVisible = !OptionsWrapper<Settings.Settings>.Options.HideVehicleEditor;
-          ItemClass itemClass = Singleton<TransportManager>.instance.m_lines.m_buffer[(int) lineId].Info.m_class;
+          var lineInfo = Singleton<TransportManager>.instance.m_lines.m_buffer[(int) lineId].Info;
+          if (lineInfo == null) return;
+          ItemClass itemClass = lineInfo.m_class;
           ItemClass.SubService subService = itemClass.m_subService;
           ItemClass.Service service = itemClass.m_service;
           ItemClass.Level level = itemClass.m_level;
@@ -138,25 +154,30 @@ namespace ImprovedPublicTransport2.UI.PanelExtenders
         this._distanceTraveled.parent.Show();
         this._distanceProgress.parent.Show();
         VehicleManager vm = Singleton<VehicleManager>.instance;
-        if ((vm.m_vehicles.m_buffer[(int) vehicleID].m_flags & Vehicle.Flags.Stopped) != ~(Vehicle.Flags.Created | Vehicle.Flags.Deleted | Vehicle.Flags.Spawned | Vehicle.Flags.Inverted | Vehicle.Flags.TransferToTarget | Vehicle.Flags.TransferToSource | Vehicle.Flags.Emergency1 | Vehicle.Flags.Emergency2 | Vehicle.Flags.WaitingPath | Vehicle.Flags.Stopped | Vehicle.Flags.Leaving | Vehicle.Flags.Arriving | Vehicle.Flags.Reversed | Vehicle.Flags.TakingOff | Vehicle.Flags.Flying | Vehicle.Flags.Landing | Vehicle.Flags.WaitingSpace | Vehicle.Flags.WaitingCargo | Vehicle.Flags.GoingBack | Vehicle.Flags.WaitingTarget | Vehicle.Flags.Importing | Vehicle.Flags.Exporting | Vehicle.Flags.Parking | Vehicle.Flags.CustomName | Vehicle.Flags.OnGravel | Vehicle.Flags.WaitingLoading | Vehicle.Flags.Congestion | Vehicle.Flags.DummyTraffic | Vehicle.Flags.Underground | Vehicle.Flags.Transition | Vehicle.Flags.InsideBuilding | Vehicle.Flags.LeftHandDrive))
+        if (vehicleID == 0) return;
+        ref var vehicle = ref vm.m_vehicles.m_buffer[(int)vehicleID];
+        if (vehicle.Info == null) return;
+        if ((vehicle.m_flags & Vehicle.Flags.Stopped) != ~(Vehicle.Flags.Created | Vehicle.Flags.Deleted | Vehicle.Flags.Spawned | Vehicle.Flags.Inverted | Vehicle.Flags.TransferToTarget | Vehicle.Flags.TransferToSource | Vehicle.Flags.Emergency1 | Vehicle.Flags.Emergency2 | Vehicle.Flags.WaitingPath | Vehicle.Flags.Stopped | Vehicle.Flags.Leaving | Vehicle.Flags.Arriving | Vehicle.Flags.Reversed | Vehicle.Flags.TakingOff | Vehicle.Flags.Flying | Vehicle.Flags.Landing | Vehicle.Flags.WaitingSpace | Vehicle.Flags.WaitingCargo | Vehicle.Flags.GoingBack | Vehicle.Flags.WaitingTarget | Vehicle.Flags.Importing | Vehicle.Flags.Exporting | Vehicle.Flags.Parking | Vehicle.Flags.CustomName | Vehicle.Flags.OnGravel | Vehicle.Flags.WaitingLoading | Vehicle.Flags.Congestion | Vehicle.Flags.DummyTraffic | Vehicle.Flags.Underground | Vehicle.Flags.Transition | Vehicle.Flags.InsideBuilding | Vehicle.Flags.LeftHandDrive))
         {
           if (CachedVehicleData.m_cachedVehicleData[(int) vehicleID].IsUnbunchingInProgress)
             this._status.text = Localization.Get("VEHICLE_PANEL_STATUS_UNBUNCHING");
           this._distance.text = this._status.text;
-          var boardingTime = vm.m_vehicles.m_buffer[(int)vehicleID].Info?.m_vehicleType == VehicleInfo.VehicleType.Plane
+          var boardingTime = vehicle.Info.m_vehicleType == VehicleInfo.VehicleType.Plane
             ? CanLeaveStopPatch.AirplaneBoardingTime
             : CanLeaveStopPatch.BoardingTime;
           
-          var timeSinceBoardingFinished = vm.m_vehicles.m_buffer[vehicleID].m_waitCounter - boardingTime;
+          var timeSinceBoardingFinished = vehicle.m_waitCounter - boardingTime;
           float progress;
           if (timeSinceBoardingFinished <= 0)
           {
             progress = (boardingTime + timeSinceBoardingFinished) / (float)boardingTime;
+            progress = Mathf.Clamp01(progress);
           }
           else
           {
-            var maxUnbunchingTime = (float) Mathf.Min(OptionsWrapper<Settings.Settings>.Options.IntervalAggressionFactor, CanLeaveStopPatch.MaxUnbunchingTime);
+            var maxUnbunchingTime = Mathf.Max(1f, (float) Mathf.Min(OptionsWrapper<Settings.Settings>.Options.IntervalAggressionFactor, CanLeaveStopPatch.MaxUnbunchingTime));
             progress = timeSinceBoardingFinished / maxUnbunchingTime;
+            progress = Mathf.Clamp01(progress);
           }
           this._distanceTraveled.progressColor = Color.green;
           this._distanceTraveled.value = progress;
@@ -181,7 +202,7 @@ namespace ImprovedPublicTransport2.UI.PanelExtenders
           this._status.text = text;
           if (flag)
           {
-            ushort targetBuilding = vm.m_vehicles.m_buffer[(int) vehicleID].m_targetBuilding;
+            ushort targetBuilding = vehicle.m_targetBuilding;
             InstanceID id = new InstanceID();
             id.NetNode = targetBuilding;
             string name = Singleton<InstanceManager>.instance.GetName(id);
@@ -197,7 +218,8 @@ namespace ImprovedPublicTransport2.UI.PanelExtenders
         this._passengersCurrentWeek.text = CachedVehicleData.m_cachedVehicleData[(int) vehicleID].PassengersThisWeek.ToString();
         this._passengersLastWeek.text = CachedVehicleData.m_cachedVehicleData[(int) vehicleID].PassengersLastWeek.ToString();
         this._passengersAverage.text = CachedVehicleData.m_cachedVehicleData[(int) vehicleID].PassengersAverage.ToString();
-        PrefabData prefabData = Array.Find(VehiclePrefabs.instance.GetPrefabs(service, subService, level), item => item.PrefabDataIndex == vm.m_vehicles.m_buffer[(int) vehicleID].Info.m_prefabDataIndex);
+        PrefabData prefabData = VehiclePrefabs.instance.FindByIndex(vehicle.Info.m_prefabDataIndex);
+        if (prefabData == null) return;
         int num1 = CachedVehicleData.m_cachedVehicleData[(int) vehicleID].IncomeThisWeek - prefabData.MaintenanceCost;
         UILabel earningsCurrentWeek = this._earningsCurrentWeek;
         float num2 = (float) num1 * 0.01f;
@@ -353,14 +375,47 @@ namespace ImprovedPublicTransport2.UI.PanelExtenders
       VehicleEditor.Instance.SetPrefab(info);
     }
 
+    private static void ClearEventClickHandlers(UIComponent component)
+    {
+      // Walk up the type hierarchy to find and null the backing delegate field for eventClick
+      Type type = component.GetType();
+      while (type != null)
+      {
+        FieldInfo field = type.GetField("eventClick", BindingFlags.NonPublic | BindingFlags.Public | BindingFlags.Instance);
+        if (field != null && typeof(Delegate).IsAssignableFrom(field.FieldType))
+        {
+          field.SetValue(component, null);
+          return;
+        }
+        type = type.BaseType;
+      }
+    }
+
     private void OnTargetClick(UIComponent component, UIMouseEventParameter eventParam)
     {
-      if (!((UnityEngine.Object) eventParam.source != (UnityEngine.Object) null))
-        return;
-      InstanceID objectUserData = (InstanceID) eventParam.source.objectUserData;
-      if (objectUserData.Type != InstanceType.NetNode)
-        return;
-      PublicTransportStopWorldInfoPanel.instance.Show(Singleton<NetManager>.instance.m_nodes.m_buffer[(int) objectUserData.NetNode].m_position, objectUserData);
+      try
+      {
+        var lineId = WorldInfoCurrentLineIDQuery.Query(out var vehicleID);
+        if (lineId == 0 || vehicleID == 0) return;
+
+        ushort targetNode = Singleton<VehicleManager>.instance.m_vehicles.m_buffer[(int) vehicleID].m_targetBuilding;
+        if (targetNode == 0) return;
+
+        InstanceID stopID = InstanceID.Empty;
+        stopID.NetNode = targetNode;
+        Vector3 position = Singleton<NetManager>.instance.m_nodes.m_buffer[(int) targetNode].m_position;
+
+        ToolsModifierControl.cameraController.SetTarget(stopID, position, Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift));
+        PublicTransportWorldInfoPanel.ResetScrollPosition();
+        UIView.SetFocus(null);
+        WorldInfoPanel.HideAllWorldInfoPanels();
+        if (PublicTransportStopWorldInfoPanel.instance != null)
+          PublicTransportStopWorldInfoPanel.instance.Show(position, stopID);
+      }
+      catch (Exception ex)
+      {
+        Debug.LogException(ex);
+      }
     }
 
     private void OnChangeVehicleClick(UIComponent component, UIMouseEventParameter eventParam)

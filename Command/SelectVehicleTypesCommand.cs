@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using ColossalFramework;
-using ImprovedPublicTransport2.Query;
-using ImprovedPublicTransport2.Data;
-using ImprovedPublicTransport2.Util;
+using ImprovedPublicTransport.Query;
+using ImprovedPublicTransport.Data;
+using ImprovedPublicTransport.Util;
 using JetBrains.Annotations;
 
-namespace ImprovedPublicTransport2.Command
+namespace ImprovedPublicTransport.Command
 {
     public static class SelectVehicleTypesCommand
     {
@@ -17,7 +17,7 @@ namespace ImprovedPublicTransport2.Command
             {
                 return;
             }
-            var selectedItems = new HashSet<string>(selectedVehicleInfos.Select(v => v.Info.name).Distinct().ToArray());
+            var selectedItems = new HashSet<string>(selectedVehicleInfos.Where(v => v.Info != null).Select(v => v.Info.name).Distinct().ToArray());
             CachedTransportLineData.SetPrefabs(lineId, selectedItems.Count == 0 ? null : selectedItems);
             Singleton<SimulationManager>.instance.AddAction(() => ReplaceVehicles(lineId));
         }

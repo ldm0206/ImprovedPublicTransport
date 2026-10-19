@@ -7,7 +7,7 @@ using System.Linq;
 using ColossalFramework.UI;
 using UnityEngine;
 
-namespace ImprovedPublicTransport2.UI.AlgernonCommons
+namespace ImprovedPublicTransport.UI.AlgernonCommons
 {
     /// <summary>
     /// Font handling.

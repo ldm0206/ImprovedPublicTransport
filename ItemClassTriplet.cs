@@ -1,4 +1,4 @@
-﻿namespace ImprovedPublicTransport2
+﻿namespace ImprovedPublicTransport
 {
     public struct ItemClassTriplet
     {
