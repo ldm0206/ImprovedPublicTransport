@@ -227,7 +227,7 @@ Set ticket prices **independently for each transport type**:
 **Key Features:**
 - **Price Control**: Drag the slider to change the fare by percentage, or click the value next to it and type an **exact fare** (e.g. `2.50` for ₡2.50; Enter applies it). The game stores fares in units of ₡0.01, so `100` = ₡1.00.
 - **32-bit fares**: The game's per-line field is only 16-bit, but the customizer stores the full 32-bit fare in the transport prefab and patches every passenger AI's fare getter to use it. The absolute cap is therefore **2,147,483,647 fare units = ₡21,474,836.47** (percentage equivalent: `2,147,483,647 / base fare × 100%`). The exact-input field accepts this range; the percentage slider tops out at 100,000% for quick adjustments.
-- **Vanilla line price override**: While the customizer is enabled, fares come from the per-type value here; the vanilla per-line ticket-price slider is not used for charging.
+- **Vanilla line price override**: Fares above the 16-bit line-field limit (₡655.35) are charged from the 32-bit per-type value; at or below that limit the game's normal per-line value still applies.
 - **Day/Night Support** : Set different prices for night hours — great for simulating night-shift premium fares
 - **Smart Policy Integration**:
   - When **Free Public Transport policy** is active in a district, all transport becomes free regardless of your slider settings

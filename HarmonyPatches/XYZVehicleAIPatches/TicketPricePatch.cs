@@ -140,9 +140,10 @@ namespace ImprovedPublicTransport.HarmonyPatches.XYZVehicleAIPatches
             }
 
             int fare = info.m_ticketPrice;
-            if (fare <= 0)
+            // The 16-bit line field can hold this fare, so the original result (which also
+            // applied the district policies and any per-line override) is already correct.
+            if (fare <= ushort.MaxValue)
             {
-                __result = 0;
                 return;
             }
 
