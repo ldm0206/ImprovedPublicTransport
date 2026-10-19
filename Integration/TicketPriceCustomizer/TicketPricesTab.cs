@@ -56,12 +56,16 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
         // Exact fare value in game fare units (100 = ₡1.00): type 2.50 for ₡2.50.
         private static string FormatFare(int fare)
         {
-            return (fare / 100f).ToString("0.00", CultureInfo.InvariantCulture);
+            int units = fare / 100;
+            int cents = fare % 100;
+            return units.ToString(CultureInfo.InvariantCulture) + "." +
+                   cents.ToString("00", CultureInfo.InvariantCulture);
         }
 
         private static int FareFromPercent(int basePrice, float percent)
         {
-            return Mathf.Clamp(Mathf.RoundToInt(basePrice * percent / 100f), 0, ushort.MaxValue);
+            double fare = (double)basePrice * percent / 100.0;
+            return fare >= int.MaxValue ? int.MaxValue : Mathf.Clamp((int)Math.Round(fare), 0, int.MaxValue);
         }
 
         // Replaces the read-only value label with an editable field so an exact fare can be
@@ -72,8 +76,8 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             var field = label.parent.AddUIComponent<UITextField>();
             field.name = "FareInput";
             field.relativePosition = label.relativePosition;
-            field.size = new Vector2(Mathf.Max(label.width, 56f), 18f);
-            field.textScale = 0.75f;
+            field.size = new Vector2(Mathf.Max(label.width, 64f), 18f);
+            field.textScale = 0.7f;
             field.textColor = new Color32((byte)206, (byte)248, (byte)0, (byte)255);
             field.normalBgSprite = "TextFieldPanel";
             field.hoveredBgSprite = "TextFieldPanelHovered";
@@ -85,7 +89,7 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             field.submitOnFocusLost = true;
             field.maxLength = 12;
             field.text = FormatFare(fare);
-            field.tooltip = "0–" + FormatFare(ushort.MaxValue);
+            field.tooltip = "0–" + FormatFare(int.MaxValue);
             label.isVisible = false;
             HidePercentSuffix(label);
             return field;
@@ -116,12 +120,19 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             fare = 0;
             if (string.IsNullOrEmpty(text)) return false;
             text = text.Trim().Replace("₡", string.Empty).Trim();
-            float value;
-            if (!float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out value) &&
-                !float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+            decimal value;
+            if (!decimal.TryParse(text, NumberStyles.Number, CultureInfo.CurrentCulture, out value) &&
+                !decimal.TryParse(text, NumberStyles.Number, CultureInfo.InvariantCulture, out value))
                 return false;
-            if (value < 0f) value = 0f;
-            fare = Mathf.Clamp(Mathf.RoundToInt(value * 100f), 0, ushort.MaxValue);
+            if (value <= 0m)
+            {
+                fare = 0;
+                return true;
+            }
+            decimal units = value * 100m;
+            fare = units >= int.MaxValue
+                ? int.MaxValue
+                : (int)Math.Round(units, MidpointRounding.AwayFromZero);
             return true;
         }
 

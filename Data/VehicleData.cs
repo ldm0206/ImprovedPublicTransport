@@ -4,6 +4,7 @@
 // MVID: 76F370C5-F40B-41AE-AA9D-1E3F87E934D3
 // Assembly location: C:\Games\Steam\steamapps\workshop\content\255710\424106600\ImprovedPublicTransport.dll
 
+using System;
 using ImprovedPublicTransport.OptionsFramework;
 using UnityEngine;
 
@@ -103,7 +104,10 @@ namespace ImprovedPublicTransport.Data
     public void BoardPassengers(int newPassengers, int ticketPrice, ushort stop)
     {
       this.LastStopNewPassengers = newPassengers;
-      this.IncomeThisWeek += newPassengers * ticketPrice;
+      // 32-bit fares can make newPassengers * ticketPrice exceed int; saturate the
+      // weekly statistic instead of letting it wrap negative.
+      long income = (long) this.IncomeThisWeek + (long) newPassengers * ticketPrice;
+      this.IncomeThisWeek = (int) Math.Max(int.MinValue, Math.Min(int.MaxValue, income));
       this.CurrentStop = stop;
     }
     

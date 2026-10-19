@@ -176,7 +176,7 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
                     continue;
                 }
 
-                SetInfoPrice(info, (ushort)Mathf.Clamp(kvp.Value, 0, UInt16.MaxValue));
+                SetInfoPrice(info, Math.Max(0, kvp.Value));
 
                 // restore line prices for all lines with this transport type
                 var transportManager = TransportManager.instance;
@@ -188,7 +188,7 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
                     if ((line.m_flags & TransportLine.Flags.Created) == TransportLine.Flags.None || line.Info != info)
                         continue;
 
-                    SetLinePrice(i, info, ref transportManager.m_lines.m_buffer[i], (ushort)Mathf.Clamp(kvp.Value, 0, UInt16.MaxValue));
+                    SetLinePrice(i, info, ref transportManager.m_lines.m_buffer[i], Math.Max(0, kvp.Value));
                 }
             }
         }
@@ -211,10 +211,12 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
                     s_basePrices[type] = basePrice;
                 }
 
-                // Calculate final price as base price × multiplier
-                int finalPriceInt = Mathf.RoundToInt(basePrice * multiplier);
-                finalPriceInt = Math.Max(0, finalPriceInt);
-                ushort finalPrice = (ushort)Mathf.Clamp(finalPriceInt, 0, UInt16.MaxValue);
+                // Calculate the full 32-bit fare. The game's per-line field is 16-bit, so the
+                // AI fare getters are patched to read this value from the transport prefab.
+                double rawPrice = (double)basePrice * multiplier;
+                int finalPrice = rawPrice >= int.MaxValue
+                    ? int.MaxValue
+                    : Math.Max(0, (int)Math.Round(rawPrice, MidpointRounding.AwayFromZero));
                 if (ImprovedPublicTransport.Util.Diagnostics.VerboseTranspileLogs) IPTUtils.Log($"TicketPriceCustomizer: Setting '{type}' multiplier to {multiplier:F1}x (base={basePrice}, final={finalPrice})");
 
                 SetInfoPrice(info, finalPrice);
@@ -248,25 +250,28 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             }
         }
 
-        private static void SetInfoPrice(TransportInfo info, ushort price)
+        private static void SetInfoPrice(TransportInfo info, int price)
         {
             if (info.m_ticketPrice == price)
             {
-               return; 
+               return;
             }
             if (ImprovedPublicTransport.Util.Diagnostics.VerboseTranspileLogs) IPTUtils.Log($"TicketPriceCustomizer: Transport info: {info.name}, was price: {info.m_ticketPrice}, new price: {price}");
             info.m_ticketPrice = price;
         }
 
-        private static void SetLinePrice(ushort lineId, TransportInfo info, ref TransportLine line, ushort price)
+        private static void SetLinePrice(ushort lineId, TransportInfo info, ref TransportLine line, int price)
         {
+            // The line field is only 16-bit; the effective fare comes from the prefab via
+            // the AI postfixes. Keep this clamped copy for other consumers/vanilla UI.
+            ushort linePrice = (ushort)Math.Min(Math.Max(price, 0), UInt16.MaxValue);
             if ((line.m_flags & TransportLine.Flags.Created) == TransportLine.Flags.None || line.Info != info ||
-                price == line.m_ticketPrice)
+                linePrice == line.m_ticketPrice)
             {
                 return;
             }
-            if (ImprovedPublicTransport.Util.Diagnostics.VerboseTranspileLogs) IPTUtils.Log($"TicketPriceCustomizer: Transport line id: {lineId}, #{line.m_lineNumber}, name: {Singleton<TransportManager>.instance.GetLineName(lineId)}, was price: {line.m_ticketPrice}, new price: {price}");
-            line.m_ticketPrice = price;
+            if (ImprovedPublicTransport.Util.Diagnostics.VerboseTranspileLogs) IPTUtils.Log($"TicketPriceCustomizer: Transport line id: {lineId}, #{line.m_lineNumber}, name: {Singleton<TransportManager>.instance.GetLineName(lineId)}, was price: {line.m_ticketPrice}, new price: {linePrice}");
+            line.m_ticketPrice = linePrice;
         }
 
         private static bool TryGetTransportInfo(string transportType, out TransportInfo info)

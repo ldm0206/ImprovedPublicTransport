@@ -226,7 +226,8 @@ Set ticket prices **independently for each transport type**:
 
 **Key Features:**
 - **Price Control**: Drag the slider to change the fare by percentage, or click the value next to it and type an **exact fare** (e.g. `2.50` for ₡2.50; Enter applies it). The game stores fares in units of ₡0.01, so `100` = ₡1.00.
-- **Theoretical maximum**: The fare is a 16-bit value, so the absolute cap is **65,535 fare units = ₡655.35**. In percentage terms that is `65,535 / base fare × 100%` — with the default ₡1.00 base fare, **65,535%**. The exact-input field accepts the full 0–655.35 range; the percentage slider tops out at 100,000%.
+- **32-bit fares**: The game's per-line field is only 16-bit, but the customizer stores the full 32-bit fare in the transport prefab and patches every passenger AI's fare getter to use it. The absolute cap is therefore **2,147,483,647 fare units = ₡21,474,836.47** (percentage equivalent: `2,147,483,647 / base fare × 100%`). The exact-input field accepts this range; the percentage slider tops out at 100,000% for quick adjustments.
+- **Vanilla line price override**: While the customizer is enabled, fares come from the per-type value here; the vanilla per-line ticket-price slider is not used for charging.
 - **Day/Night Support** : Set different prices for night hours — great for simulating night-shift premium fares
 - **Smart Policy Integration**:
   - When **Free Public Transport policy** is active in a district, all transport becomes free regardless of your slider settings
@@ -251,7 +252,7 @@ Ticket prices affect **revenue only** in this fork. Raising a fare does not redu
 - Bus price at 250%: Same passenger count, 2.5× income per trip
 - Bus price at 1000%: Same passenger count, 10× income per trip
 
-**Tip:** You do not have to drag anything — click the value and type the exact fare you want (0–655.35). The slider is just a quick way to scale the base fare by percentage.
+**Tip:** You do not have to drag anything — click the value and type the exact fare you want (0–21,474,836.47). The slider is just a quick way to scale the base fare by percentage.
 
 ### How Policies Work
 

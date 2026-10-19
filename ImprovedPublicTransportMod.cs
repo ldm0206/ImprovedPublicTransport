@@ -103,6 +103,7 @@ namespace ImprovedPublicTransport
                     CheckTransportLineVehiclesPatch.Apply();
                     ClassMatchesPatch.Apply();
                     CanLeavePatch.Apply();
+                    TicketPricePatch.Apply();
 
                     // BetterBusStopPosition integration
                     try
@@ -453,6 +454,7 @@ namespace ImprovedPublicTransport
             CheckTransportLineVehiclesPatch.Undo();
             GetDepotLevelsPatch.Undo();
             CanLeavePatch.Undo();
+            TicketPricePatch.Undo();
             EconomyPanelAwakePatch.Undo();
             Integration.TicketPriceCustomizer.TicketPricesTab.Cleanup();
 
