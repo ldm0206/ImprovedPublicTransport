@@ -162,16 +162,6 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             return 100;
         }
 
-        /// <summary>
-        /// Highest multiplier percentage the game's 16-bit fare field can hold for this
-        /// transport type. E.g. base fare 100 → 65535 / 100 * 100 = 65535%.
-        /// </summary>
-        public static float GetMaxPercent(string transportType)
-        {
-            int basePrice = GetBasePrice(transportType);
-            return basePrice > 0 ? UInt16.MaxValue * 100f / basePrice : 100000f;
-        }
-
         // Cache of resolved transport Info objects for safer simulation-thread operations.
         private static readonly System.Collections.Generic.Dictionary<string, TransportInfo> s_cachedTransportInfos = new System.Collections.Generic.Dictionary<string, TransportInfo>();
 
