@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -34,6 +35,10 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
         private const float SliderMax = 1000f;
         private const float PercentPerSliderDecade = 5f; // slider 0..1000 spans 1%..100000%
 
+        // Set while a text-field submission moves the slider, so the slider's own
+        // value-changed handler does not overwrite the exact typed value.
+        private static bool s_suppressSliderEvents;
+
         private static float PercentToSlider(float percent)
         {
             if (percent <= 0f) return SliderMin;
@@ -53,6 +58,114 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             int rounded = Mathf.RoundToInt(percent);
             // Keep huge values readable in the narrow template label.
             return rounded >= 10000 ? (rounded / 1000f).ToString("0.#") + "k" : rounded.ToString();
+        }
+
+        // Exact display for the editable field: no "k" rounding.
+        private static string FormatExactPercent(float percent)
+        {
+            float rounded = Mathf.Round(percent * 10f) / 10f;
+            return Mathf.Abs(rounded - Mathf.Round(rounded)) < 0.05f
+                ? Mathf.RoundToInt(rounded).ToString(CultureInfo.InvariantCulture)
+                : rounded.ToString("0.#", CultureInfo.InvariantCulture);
+        }
+
+        // Replaces the read-only percentage label with an editable field so an exact fare
+        // percentage can be typed (Enter or focus loss applies it).
+        private static UITextField AttachPercentField(UILabel label, float percent, bool includePercent, float maxPercent)
+        {
+            if (label == null || label.parent == null) return null;
+            var field = label.parent.AddUIComponent<UITextField>();
+            field.name = "PercentInput";
+            field.relativePosition = label.relativePosition;
+            field.size = new Vector2(Mathf.Max(label.width, 52f), 18f);
+            field.textScale = 0.75f;
+            field.textColor = new Color32((byte)206, (byte)248, (byte)0, (byte)255);
+            field.normalBgSprite = "TextFieldPanel";
+            field.hoveredBgSprite = "TextFieldPanelHovered";
+            field.focusedBgSprite = "TextFieldPanel";
+            field.selectionSprite = "EmptySprite";
+            field.horizontalAlignment = UIHorizontalAlignment.Right;
+            field.verticalAlignment = UIVerticalAlignment.Middle;
+            field.builtinKeyNavigation = true;
+            field.submitOnFocusLost = true;
+            field.maxLength = 12;
+            field.text = FormatExactPercent(percent) + (includePercent ? "%" : "");
+            field.tooltip = "0–" + FormatExactPercent(maxPercent) + "%";
+            label.isVisible = false;
+            return field;
+        }
+
+        private static string FieldText(TicketPriceSliderRow row, float percent)
+        {
+            return FormatExactPercent(percent) + (row.PercentFieldsIncludePercent ? "%" : "");
+        }
+
+        private static bool TryParsePercent(string text, out float percent)
+        {
+            percent = 0f;
+            if (string.IsNullOrEmpty(text)) return false;
+            text = text.Trim();
+            if (text.EndsWith("%")) text = text.Substring(0, text.Length - 1).Trim();
+            bool thousands = false;
+            if (text.EndsWith("k", StringComparison.OrdinalIgnoreCase))
+            {
+                thousands = true;
+                text = text.Substring(0, text.Length - 1).Trim();
+            }
+            float value;
+            if (!float.TryParse(text, NumberStyles.Float, CultureInfo.CurrentCulture, out value) &&
+                !float.TryParse(text, NumberStyles.Float, CultureInfo.InvariantCulture, out value))
+                return false;
+            percent = Mathf.Max(0f, thousands ? value * 1000f : value);
+            return true;
+        }
+
+        private static void SubmitPercent(TicketPriceSliderRow row, bool night, string text)
+        {
+            float percent;
+            if (!TryParsePercent(text, out percent))
+            {
+                RefreshPercentField(row, night);
+                return;
+            }
+
+            // Never exceed what the game's 16-bit fare field can store for this base fare.
+            percent = Mathf.Min(percent, row.MaxPercent);
+            float multiplier = percent / 100f;
+            SetMultiplier(row.TransportType.Name, night, multiplier);
+
+            // Apply the exact typed value, not the slider's quantised position.
+            var dayMultiplier = GetMultiplier(row.TransportType.Name, false);
+            var nightMultiplier = GetMultiplier(row.TransportType.Name, true);
+            var simulationManager = Singleton<SimulationManager>.instance;
+            bool isNight = simulationManager != null && simulationManager.m_isNightTime;
+            ApplyPriceForType(row.TransportType.Name, isNight ? nightMultiplier : dayMultiplier);
+            OptionsWrapper<Settings.Settings>.SaveOptions();
+
+            var slider = night ? row.NightSlider : row.DaySlider;
+            s_suppressSliderEvents = true;
+            try
+            {
+                if (slider != null) slider.value = PercentToSlider(percent);
+            }
+            finally
+            {
+                s_suppressSliderEvents = false;
+            }
+
+            var label = night ? row.NightLabel : row.DayLabel;
+            if (label != null) label.text = FormatPercentValue(percent);
+            var field = night ? row.NightField : row.DayField;
+            if (field != null) field.text = FieldText(row, percent);
+        }
+
+        private static void RefreshPercentField(TicketPriceSliderRow row, bool night)
+        {
+            float percent = GetMultiplier(row.TransportType.Name, night) * 100f;
+            var label = night ? row.NightLabel : row.DayLabel;
+            if (label != null) label.text = FormatPercentValue(percent);
+            var field = night ? row.NightField : row.DayField;
+            if (field != null) field.text = FieldText(row, percent);
         }
 
         // Transport types with their sprite names and display order
@@ -727,6 +840,7 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             // Note: BudgetItem template already has a static "%" label next to the value;
             // set text to the number only to avoid showing "100%%".
             float dayPercent             = GetMultiplier(transportType.Name, false) * 100f;
+            float maxPercent             = PriceCustomization.GetMaxPercent(transportType.Name);
             daySlider.minValue           = SliderMin;
             daySlider.maxValue           = SliderMax;
             daySlider.stepSize           = 1f;
@@ -734,8 +848,10 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             daySlider.value              = PercentToSlider(dayPercent);
             dayLabel.text                = FormatPercentValue(dayPercent);
             daySlider.tooltip            = GetTransportTooltip(transportType.Name);
+            var dayField                 = AttachPercentField(dayLabel, dayPercent, false, maxPercent);
 
             // Night slider — always configure (day/night cycle is vanilla, not After Dark)
+            UITextField nightField = null;
             if (nightSlider != null)
             {
                 float nightPercent           = GetMultiplier(transportType.Name, true) * 100f;
@@ -746,6 +862,7 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
                 nightSlider.value            = PercentToSlider(nightPercent);
                 if (nightLabel != null) nightLabel.text = FormatPercentValue(nightPercent);
                 nightSlider.tooltip          = GetTransportTooltip(transportType.Name);
+                nightField                   = AttachPercentField(nightLabel, nightPercent, false, maxPercent);
             }
 
             // Income total — deferred: populated by OnUpdate once the game is running,
@@ -763,24 +880,43 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
                 TransportType = transportType,
                 DaySlider     = daySlider,
                 DayLabel      = dayLabel,
+                DayField      = dayField,
                 NightSlider   = nightSlider,
                 NightLabel    = nightLabel,
+                NightField    = nightField,
                 TotalLabel    = totalLabel,
+                MaxPercent    = maxPercent,
             };
 
             daySlider.eventValueChanged += (comp, value) =>
             {
-                dayLabel.text = FormatPercentValue(SliderToPercent(value));
-                ApplyMultiplier(row);
+                if (s_suppressSliderEvents) return;
+                float percent = SliderToPercent(value);
+                dayLabel.text = FormatPercentValue(percent);
+                if (dayField != null) dayField.text = FieldText(row, percent);
+                ApplyMultiplier(row, false);
             };
+
+            if (dayField != null)
+            {
+                dayField.eventTextSubmitted += (comp, text) => SubmitPercent(row, false, text);
+            }
 
             if (nightSlider != null)
             {
                 nightSlider.eventValueChanged += (comp, value) =>
                 {
-                    if (nightLabel != null) nightLabel.text = FormatPercentValue(SliderToPercent(value));
-                    ApplyMultiplier(row);
+                    if (s_suppressSliderEvents) return;
+                    float percent = SliderToPercent(value);
+                    if (nightLabel != null) nightLabel.text = FormatPercentValue(percent);
+                    if (nightField != null) nightField.text = FieldText(row, percent);
+                    ApplyMultiplier(row, true);
                 };
+            }
+
+            if (nightField != null)
+            {
+                nightField.eventTextSubmitted += (comp, text) => SubmitPercent(row, true, text);
             }
 
             return row;
@@ -839,6 +975,7 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             sliderAreaW = Mathf.Max(50f, sliderAreaW);
 
             float currentPercent = GetMultiplier(transportType.Name, false) * 100f;
+            float maxPercent = PriceCustomization.GetMaxPercent(transportType.Name);
 
             float daySliderY   = PAD;
             float nightSliderY = PAD + SLD_H + SLD_GAP;
@@ -851,6 +988,7 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             float pctX = sliderAreaX + sliderAreaW + PAD;
             var dayLabel = CreatePercentLabel(rowPanel, pctX, daySliderY, PCT_W);
             dayLabel.text = FormatPercentValue(currentPercent) + "%";
+            var dayField = AttachPercentField(dayLabel, currentPercent, true, maxPercent);
 
             // ── Night slider — always shown (day/night cycle is vanilla, not After Dark) ───
             float nightPercent = GetMultiplier(transportType.Name, true) * 100f;
@@ -860,6 +998,7 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
 
             UILabel nightLabel = CreatePercentLabel(rowPanel, pctX, nightSliderY, PCT_W);
             nightLabel.text = FormatPercentValue(nightPercent) + "%";
+            var nightField = AttachPercentField(nightLabel, nightPercent, true, maxPercent);
 
             // ── Income total box ────────────────────────────────────────
             float totalX = rowPanel.width - TOTAL_W - PAD;
@@ -895,24 +1034,44 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
                 TransportType = transportType,
                 DaySlider     = daySlider,
                 DayLabel      = dayLabel,
+                DayField      = dayField,
                 NightSlider   = nightSlider,
                 NightLabel    = nightLabel,
+                NightField    = nightField,
                 TotalLabel    = totalLabel,
+                PercentFieldsIncludePercent = true,
+                MaxPercent    = maxPercent,
             };
 
             daySlider.eventValueChanged += (comp, value) =>
             {
-                dayLabel.text = FormatPercentValue(SliderToPercent(value)) + "%";
-                ApplyMultiplier(row);
+                if (s_suppressSliderEvents) return;
+                float percent = SliderToPercent(value);
+                dayLabel.text = FormatPercentValue(percent) + "%";
+                if (dayField != null) dayField.text = FieldText(row, percent);
+                ApplyMultiplier(row, false);
             };
+
+            if (dayField != null)
+            {
+                dayField.eventTextSubmitted += (comp, text) => SubmitPercent(row, false, text);
+            }
 
             if (nightSlider != null)
             {
                 nightSlider.eventValueChanged += (comp, value) =>
                 {
-                    if (nightLabel != null) nightLabel.text = FormatPercentValue(SliderToPercent(value)) + "%";
-                    ApplyMultiplier(row);
+                    if (s_suppressSliderEvents) return;
+                    float percent = SliderToPercent(value);
+                    if (nightLabel != null) nightLabel.text = FormatPercentValue(percent) + "%";
+                    if (nightField != null) nightField.text = FieldText(row, percent);
+                    ApplyMultiplier(row, true);
                 };
+            }
+
+            if (nightField != null)
+            {
+                nightField.eventTextSubmitted += (comp, text) => SubmitPercent(row, true, text);
             }
 
             return row;
@@ -969,17 +1128,24 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             return label;
         }
 
-        private static void ApplyMultiplier(TicketPriceSliderRow row)
+        // Only the slider the player moved is read back; the other period keeps its
+        // current value, which may have been typed exactly into the input field.
+        private static void ApplyMultiplier(TicketPriceSliderRow row, bool night)
         {
             try
             {
-                float dayMultiplier   = SliderToPercent(row.DaySlider.value) / 100f;
-                float nightMultiplier = row.NightSlider != null
-                    ? SliderToPercent(row.NightSlider.value) / 100f
-                    : dayMultiplier;
-
-                SetMultiplier(row.TransportType.Name, false, dayMultiplier);
-                SetMultiplier(row.TransportType.Name, true,  nightMultiplier);
+                float dayMultiplier   = GetMultiplier(row.TransportType.Name, false);
+                float nightMultiplier = GetMultiplier(row.TransportType.Name, true);
+                if (night)
+                {
+                    nightMultiplier = SliderToPercent(row.NightSlider.value) / 100f;
+                    SetMultiplier(row.TransportType.Name, true, nightMultiplier);
+                }
+                else
+                {
+                    dayMultiplier = SliderToPercent(row.DaySlider.value) / 100f;
+                    SetMultiplier(row.TransportType.Name, false, dayMultiplier);
+                }
 
                 // Apply whichever multiplier is active right now
                 bool isNight = Singleton<SimulationManager>.instance.m_isNightTime;
@@ -1195,12 +1361,22 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
                 {
                     float defaultDay   = GetMultiplier(row.TransportType.Name, false) * 100f;
                     float defaultNight = GetMultiplier(row.TransportType.Name, true)  * 100f;
-                    row.DaySlider.value = PercentToSlider(defaultDay);
-                    row.DayLabel.text = FormatPercentValue(defaultDay) + "%";
+                    s_suppressSliderEvents = true;
+                    try
+                    {
+                        row.DaySlider.value = PercentToSlider(defaultDay);
+                        if (row.NightSlider != null) row.NightSlider.value = PercentToSlider(defaultNight);
+                    }
+                    finally
+                    {
+                        s_suppressSliderEvents = false;
+                    }
+                    row.DayLabel.text = FormatPercentValue(defaultDay);
+                    if (row.DayField != null) row.DayField.text = FieldText(row, defaultDay);
                     if (row.NightSlider != null)
                     {
-                        row.NightSlider.value = PercentToSlider(defaultNight);
-                        row.NightLabel.text = FormatPercentValue(defaultNight) + "%";
+                        row.NightLabel.text = FormatPercentValue(defaultNight);
+                        if (row.NightField != null) row.NightField.text = FieldText(row, defaultNight);
                     }
                     if (row.TotalLabel != null)
                     {
@@ -1452,9 +1628,13 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             public TransportTypeInfo TransportType;
             public UISlider DaySlider;
             public UILabel DayLabel;
+            public UITextField DayField;
             public UISlider NightSlider;
             public UILabel NightLabel;
+            public UITextField NightField;
             public UILabel TotalLabel;
+            public bool PercentFieldsIncludePercent;
+            public float MaxPercent;
         }
 
         #endregion

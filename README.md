@@ -225,7 +225,8 @@ Set ticket prices **independently for each transport type**:
 - **Helicopters**
 
 **Key Features:**
-- **Price Control**: Adjust individual transport fares from 0% (free) upward with no upper limit (the game stores fares in a 16-bit field, so that field is the only hard limit)
+- **Price Control**: Adjust individual transport fares from 0% (free) upward with no artificial limit. Drag the slider, or click the percentage and type an exact value (Enter applies it). Tooltips show the valid range for each type.
+- **Theoretical maximum**: The game stores each fare in a 16-bit field (max 65,535), so the cap is `65,535 / base fare × 100%`. With the default ₡1.00 base fare that is **65,535%** (₡655.35); the exact-input field clamps to this value for each type.
 - **Day/Night Support** : Set different prices for night hours — great for simulating night-shift premium fares
 - **Smart Policy Integration**:
   - When **Free Public Transport policy** is active in a district, all transport becomes free regardless of your slider settings
@@ -250,7 +251,7 @@ Ticket prices affect **revenue only** in this fork. Raising a fare does not redu
 - Bus price at 250%: Same passenger count, 2.5× income per trip
 - Bus price at 1000%: Same passenger count, 10× income per trip
 
-**Tip:** The slider has no artificial maximum. The fare is clamped only by the game's 16-bit fare field.
+**Tip:** You can type an exact percentage instead of dragging. The slider goes up to 100,000%, and the input field is clamped to each type's real cap (65,535% for a ₡1.00 base fare).
 
 ### How Policies Work
 
