@@ -51,7 +51,11 @@ namespace ImprovedPublicTransport.HarmonyPatches.TransportLinePatches
                     fareField.DeclaringType == typeof(TransportLine) &&
                     fareField.Name == nameof(TransportLine.m_ticketPrice))
                 {
-                    newCodes.Add(new CodeInstruction(OpCodes.Ldc_I4_0) { labels = codeInstruction.labels });
+                    newCodes.Add(new CodeInstruction(OpCodes.Ldc_I4_0)
+                    {
+                        labels = codeInstruction.labels,
+                        blocks = codeInstruction.blocks
+                    });
                     continue;
                 }
 
