@@ -96,6 +96,13 @@ namespace ImprovedPublicTransport.Settings
                 return;
             }
 
+            // Resolve TransportInfo prefabs now, on the UI thread: the SetPrices call below
+            // runs on the simulation thread, where PrefabCollection lookups are unsafe.
+            if (enabled)
+            {
+                ImprovedPublicTransport.Integration.TicketPriceCustomizer.PriceCustomization.ResolveTransportInfos();
+            }
+
             // Apply ticket multipliers in simulation thread (game data manipulation)
             SimulationManager.instance.AddAction(() =>
             {

@@ -149,21 +149,92 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
         }
 
         // Keep track of original base prices to avoid compounding multipliers
+        // (keyed by TransportInfo prefab name — see ToPrefabName).
         private static readonly System.Collections.Generic.Dictionary<string, int> s_basePrices = new System.Collections.Generic.Dictionary<string, int>();
 
         /// <summary>
+        /// Maps ticket-tab type names to TransportInfo prefab names where they differ.
+        /// Unknown names pass through unchanged.
+        /// </summary>
+        public static string ToPrefabName(string transportType)
+        {
+            switch (transportType)
+            {
+                case "Plane":          return "Airplane";
+                case "Helicopter":     return "Passenger Helicopter";
+                case "SightseeingBus": return "Sightseeing Bus";
+                case "IntercityBus":   return "Intercity Bus";
+                default:               return transportType;
+            }
+        }
+
+        /// <summary>
         /// Base (100% multiplier) fare for a transport type, in game fare units.
-        /// Falls back to the TransportInfo default when the type has no line yet.
+        /// Falls back to the resolved prefab's current price, then to 100.
         /// </summary>
         public static int GetBasePrice(string transportType)
         {
-            if (s_basePrices.TryGetValue(transportType, out int basePrice) && basePrice > 0)
+            var key = ToPrefabName(transportType);
+            if (s_basePrices.TryGetValue(key, out int basePrice) && basePrice > 0)
                 return basePrice;
+            // Not recorded yet (e.g. the tab was built before SetPrices ran): use the
+            // resolved prefab's current price so line-less types (Taxi, CableCar) still
+            // show real fares.
+            if (s_cachedTransportInfos.TryGetValue(key, out var prefab) && prefab != null && prefab.m_ticketPrice > 0)
+                return prefab.m_ticketPrice;
             return 100;
         }
 
         // Cache of resolved transport Info objects for safer simulation-thread operations.
         private static readonly System.Collections.Generic.Dictionary<string, TransportInfo> s_cachedTransportInfos = new System.Collections.Generic.Dictionary<string, TransportInfo>();
+
+        // TransportInfo prefab names for every type the customizer supports. Types without
+        // player transport lines (Taxi, CableCar, Ship, Airplane, ...) can never be found
+        // by scanning TransportManager.m_lines, only through PrefabCollection.
+        private static readonly string[] s_transportInfoNames =
+        {
+            "Bus", "Metro", "Train", "Ship", "Airplane", "Taxi", "Tram", "Blimp", "Ferry",
+            "CableCar", "Monorail", "Sightseeing Bus", "Intercity Bus", "Passenger Helicopter", "Trolleybus"
+        };
+
+        /// <summary>
+        /// Resolves TransportInfo prefabs for all supported types into the shared cache.
+        /// PrefabCollection lookups must stay on the main thread (some mods crash on
+        /// worker-thread asset deserialization), so call this from level load or UI code,
+        /// never from the simulation thread. Idempotent; entries already resolved via
+        /// line scans are kept.
+        /// </summary>
+        public static void ResolveTransportInfos()
+        {
+            try
+            {
+                foreach (var name in s_transportInfoNames)
+                {
+                    if (s_cachedTransportInfos.TryGetValue(name, out var cached) && cached != null)
+                        continue;
+
+                    var info = FindTransportInfoPrefab(name);
+                    if (info != null)
+                    {
+                        s_cachedTransportInfos[name] = info;
+                        if (ImprovedPublicTransport.Util.Diagnostics.VerboseTranspileLogs) IPTUtils.Log($"TicketPriceCustomizer: Resolved prefab for '{name}'.");
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                IPTUtils.LogError($"TicketPriceCustomizer: ResolveTransportInfos failed: {e.Message}");
+            }
+        }
+
+        private static TransportInfo FindTransportInfoPrefab(string name)
+        {
+            var info = PrefabCollection<TransportInfo>.FindLoaded(name);
+            // The cable car asset is spelled "Cable Car" in some game versions.
+            if (info == null && name == "CableCar")
+                info = PrefabCollection<TransportInfo>.FindLoaded("Cable Car");
+            return info;
+        }
 
         public static void ResetToVanilla()
         {
@@ -205,10 +276,11 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
                 }
 
                 // Record base price if not already recorded (use original prefab value)
-                if (!s_basePrices.TryGetValue(type, out var basePrice))
+                var baseKey = ToPrefabName(type);
+                if (!s_basePrices.TryGetValue(baseKey, out var basePrice))
                 {
                     basePrice = (int)info.m_ticketPrice;
-                    s_basePrices[type] = basePrice;
+                    s_basePrices[baseKey] = basePrice;
                 }
 
                 // Calculate the full 32-bit fare. The game's per-line field is 16-bit, so the
@@ -300,7 +372,8 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
 
             // We purposely skip PrefabCollection lookups here in the simulation thread path because some external
             // mods (e.g. LoadingScreenModRevisited custom asset deserializer) can crash when called from worker threads.
-            // Use line snapshot data only.
+            // Use line snapshot data only. Line-less types (Taxi, CableCar, ...) get their
+            // prefab into this cache via ResolveTransportInfos, called on the main thread.
             s_cachedTransportInfos[transportType] = info;
             return info != null;
         }

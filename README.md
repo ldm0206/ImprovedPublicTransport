@@ -181,8 +181,11 @@ Fine-tune intercity bus behavior with a toggle on regular bus stations to allow 
   - Monorail-Bus Hub
 - **Note**: The Bus-Train-Tram Hub uses its native intercity trains toggle and is left unchanged to avoid transport mode conflicts (only one intercity toggle per building is supported by the game UI).
 
-#### Mileage Taxi Service
-Taxis now charge per mile/kilometer traveled (based on IPT 'Show speed in' setting) instead of straight line distance from start to finish points, making them a realistic urban transportation option (After Dark DLC).
+#### Treasury Rescue
+If the treasury is negative when a save loads (or turns negative later), a small panel offers a one-click reset to ₡100,000. Dismiss it with the close button if you prefer to keep the debt.
+
+#### Taxi Fare Safety
+Taxis charge the vanilla per-distance fare at drop-off. Oversized 32-bit fares are clamped so they can no longer overflow into negative income, and saves whose taxi income statistics were corrupted by that overflow are repaired automatically on load (After Dark DLC).
 
 #### Realistic Walking Speed
 Enables realistic pedestrian and cycling speeds in your city, controllable from the Options Panel:
@@ -216,7 +219,7 @@ Set ticket prices **independently for each transport type**:
 - **Trains**
 - **Metros**
 - **Monorail**
-- **Taxis** (charged per actual distance traveled via Mileage Taxi Services)
+- **Taxis** (vanilla per-distance fare charged at drop-off)
 - **Cable Cars**
 - **Ships**
 - **Ferries**

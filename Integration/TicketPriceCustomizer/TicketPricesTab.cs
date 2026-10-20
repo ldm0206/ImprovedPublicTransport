@@ -608,6 +608,10 @@ namespace ImprovedPublicTransport.Integration.TicketPriceCustomizer
             if (settings.TicketPriceCustomizer == null)
                 settings.TicketPriceCustomizer = new Settings.Settings.TicketPriceCustomizerSettings();
 
+            // Rows read prefab base prices; resolve line-less types (Taxi, CableCar) now
+            // that we're on the UI thread where PrefabCollection lookups are safe.
+            PriceCustomization.ResolveTransportInfos();
+
             // Create main container with padding matching budget panel
             const float SIDE_PAD = 45f;        // Outer left/right padding
             const float COL_GAP = 55f;         // Gap between columns

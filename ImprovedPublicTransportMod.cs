@@ -155,6 +155,7 @@ namespace ImprovedPublicTransport
                     IptGameObject.AddComponent<PanelExtenderLine>();
                     IptGameObject.AddComponent<PanelExtenderVehicle>();
                     IptGameObject.AddComponent<PanelExtenderCityService>();
+                    IptGameObject.AddComponent<NegativeCashRescue>();
                     
                     Utils.Log("Loading done!");
                     // Activate integration patches
@@ -186,7 +187,9 @@ namespace ImprovedPublicTransport
                         Utils.LogError($"BetterBoarding: failed to apply integration: {ex.Message}");
                     }
 
-                    // MileageTaxiServices integration (generate fare income from taxi mileage)
+                    // Taxi fare safety net: clamps the vanilla drop-off fare so oversized
+                    // 32-bit fares can't overflow into negative income (per-tick mileage
+                    // charging was removed — vanilla drop-off fares are the only taxi income).
                     // Requires After Dark DLC (taxis are an After Dark feature)
                     if (SteamHelper.IsDLCOwned(SteamHelper.DLC.AfterDarkDLC))
                     {
@@ -199,6 +202,10 @@ namespace ImprovedPublicTransport
                         {
                             Utils.LogError($"MileageTaxiServices: failed to apply integration: {ex.Message}");
                         }
+
+                        // Zero out corrupt negative taxi income baked into loaded saves
+                        // (taxi income can never legitimately be negative).
+                        SimulationManager.instance.AddAction(MileageTaxiServices.TaxiIncomeRepair.SanitizeNegativeIncome);
                     }
                     else
                     {
@@ -247,6 +254,9 @@ namespace ImprovedPublicTransport
                     {
                         if (OptionsWrapper<Settings.Settings>.Options.TicketPriceCustomizerMode == (int)Settings.Settings.TicketPriceCustomizerModes.Enabled)
                         {
+                            // Resolve TransportInfo prefabs on the main thread first: types without
+                            // transport lines (Taxi, CableCar, ...) can't be found by scanning lines.
+                            ImprovedPublicTransport.Integration.TicketPriceCustomizer.PriceCustomization.ResolveTransportInfos();
                             ImprovedPublicTransport.Integration.TicketPriceCustomizer.PriceCustomization.SetPrices(OptionsWrapper<Settings.Settings>.Options.TicketPriceCustomizer);
                             if (ImprovedPublicTransport.Util.Diagnostics.VerboseTranspileLogs) Utils.Log("TicketPriceCustomizer: Prices applied on load.");
 

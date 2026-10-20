@@ -279,3 +279,6 @@ WHATSNEW_3_0_0_1 已为Race Day更新；现与More Vehicles Renewed兼容。
 WHATSNEW_3_0_0_2 以下mod已集成到IPT3中:\n • Advanced Stop Selection Revisited\n • Auto Line Color Redux\n • Better Bus Stop Position\n • Better Train Boarding\n • Elevated Stops Enabler Revisited  \n • Express Bus Services\n • Flight Tracker\n • Intercity Bus Control\n • Mileage Taxi Services\n • Realistic Walking Speed\n • Stops and Stations\n • Ticket Price Customizer
 
 WHATSNEW_3_0_1 Public Transport Unstucker 现已整合到 IPT3。\n有关其他已整合的模组，请参阅 3.0 版本。为避免冲突，请退订原始模组。
+
+NEGATIVE_CASH_RESCUE_TITLE 国库资金为负！
+NEGATIVE_CASH_RESCUE_BUTTON 设为 ₡100,000

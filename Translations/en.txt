@@ -280,3 +280,6 @@ WHATSNEW_3_0_0_1 Updated for Race Day; now compatible with More Vehicles Renewed
 WHATSNEW_3_0_0_2 The following mods have been integrated into IPT3:\n • Advanced Stop Selection Revisited\n • Auto Line Color Redux\n • Better Bus Stop Position\n • Better Train Boarding\n • Elevated Stops Enabler Revisited  \n • Express Bus Services\n • Flight Tracker\n • Intercity Bus Control\n • Mileage Taxi Services\n • Public Transport Unstucker\n • Realistic Walking Speed\n • Stops and Stations\n • Ticket Price Customizer
 
 WHATSNEW_3_0_1 Public Transport Unstucker now integrated into IPT3.\nSee version 3.0 for all other integrated mods. Unsubscribe from originals to avoid conflicts.
+
+NEGATIVE_CASH_RESCUE_TITLE Treasury is negative!
+NEGATIVE_CASH_RESCUE_BUTTON Reset to ₡100,000
